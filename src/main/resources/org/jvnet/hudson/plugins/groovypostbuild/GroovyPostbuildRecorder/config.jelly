@@ -23,9 +23,15 @@ THE SOFTWARE.
 -->
 
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+    <script src="/plugin/groovy-postbuild/lib/codemirror.js"></script>
+	<link rel="stylesheet" href="/plugin/groovy-postbuild/lib/codemirror.css"></link>
+	<script src="/plugin/groovy-postbuild/mode/clike/clike.js"></script>
+	<link rel="stylesheet" href="/plugin/groovy-postbuild/mode/clike/clike.css"></link>
+	<style>.CodeMirror {border: 2px inset #dee;}</style>
+	
   <P>behavior: ${instance.behavior}</P>
   <f:entry title="Groovy script:">
-    <f:textarea field="groovyScript" />
+    <f:textarea id="groovy.postbuild.script" field="groovyScript" />
   </f:entry>
   <f:entry title="If the script fails:" field="behavior">
     <select name="groovypostbuild.groovyPostbuilRecorder.behavior" align="right" >
@@ -34,4 +40,11 @@ THE SOFTWARE.
       <f:option value="2" selected="${instance.behavior == 2}">Mark build as failed</f:option>
     </select>
   </f:entry>
+  <script>
+      var editor = CodeMirror.fromTextArea(document.getElementById("groovy.postbuild.script"), {
+        lineNumbers: true,
+        matchBrackets: true,
+        mode: "text/x-groovy-postbuild"
+      });
+   </script>
 </j:jelly>
