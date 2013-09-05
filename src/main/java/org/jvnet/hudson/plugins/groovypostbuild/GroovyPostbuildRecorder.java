@@ -301,60 +301,54 @@ public class GroovyPostbuildRecorder extends Recorder {
         ClassLoader cl = new URLClassLoader(getClassPath(), getClass().getClassLoader());
         GroovyShell shell = new GroovyShell(cl);
         shell.setVariable("manager", badgeManager);
+       
+        File external_file = null;
+        Pattern pattern = Pattern.compile("^(scriptler|file):(.*)$");
+        Matcher match = pattern.matcher(groovyScript);
 
-        boolean use_scriptler = true;
-
-        PluginWrapper scriptler_wrapper = Hudson.getInstance().pluginManager.getPlugin("scriptler");
-        File scriptler_file = null;
-        if (true == true) {
-            Plugin scriptler_plugin = scriptler_wrapper.getPlugin();
-            Logger.getLogger(GroovyPostbuildRecorder.class.getName()).log(Level.SEVERE, "Got the plugin, I guess");
-            List<File> scripts = null;
-            try {
-                scripts = (List<File>) scriptler_plugin.getClass().getMethod("getAvailableScripts").invoke(scriptler_plugin, new Object[0]);
-            } catch (NoSuchMethodException ex) {
-                Logger.getLogger(GroovyPostbuildRecorder.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (SecurityException ex) {
-                Logger.getLogger(GroovyPostbuildRecorder.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IllegalAccessException ex) {
-                Logger.getLogger(GroovyPostbuildRecorder.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IllegalArgumentException ex) {
-                Logger.getLogger(GroovyPostbuildRecorder.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (InvocationTargetException ex) {
-                Logger.getLogger(GroovyPostbuildRecorder.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-            Pattern pattern = Pattern.compile("^(scriptler|file):(.*)$");
-            Matcher match = pattern.matcher(groovyScript);
-
-            if (match.matches() == true) {
+        if (match.matches() == true) {
+            if (match.group(1).equals("scriptler")) {
                 String target_file = match.group(2);
-                Logger.getLogger(GroovyPostbuildRecorder.class.getName()).log(Level.SEVERE, target_file);
-
-                if (match.group(1).equals("scriptler")) {
-                    for (File file : scripts) {
-                        if (file.getName().equals(target_file)) {
-                            scriptler_file = file;
-                            break;
-                        }
-                    }
-
-                    if (scriptler_file == null) {
-                        Logger.getLogger(GroovyPostbuildRecorder.class.getName()).log(Level.SEVERE, "Scriptler File, " + target_file + " Was Not Found");
-                    }
-                } else {
-                    scriptler_file = new File(match.group(2));
+                Logger.getLogger(GroovyPostbuildRecorder.class.getName()).log(Level.SEVERE, "Looking in scriptler for: " + target_file);
+                
+                PluginWrapper scriptler_wrapper = Hudson.getInstance().pluginManager.getPlugin("scriptler");
+                Plugin scriptler_plugin = scriptler_wrapper.getPlugin();
+                List<File> scripts = null;
+                try {
+                    scripts = (List<File>) scriptler_plugin.getClass().getMethod("getAvailableScripts").invoke(scriptler_plugin, new Object[0]);
+                } catch (NoSuchMethodException ex) {
+                    Logger.getLogger(GroovyPostbuildRecorder.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (SecurityException ex) {
+                    Logger.getLogger(GroovyPostbuildRecorder.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IllegalAccessException ex) {
+                    Logger.getLogger(GroovyPostbuildRecorder.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IllegalArgumentException ex) {
+                    Logger.getLogger(GroovyPostbuildRecorder.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (InvocationTargetException ex) {
+                    Logger.getLogger(GroovyPostbuildRecorder.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                
+                for (File file : scripts) {
+                    if (file.getName().equals(target_file)) {
+                        external_file = file;
+                        break;
+                    }
+                }
+
+                if (external_file == null) {
+                    Logger.getLogger(GroovyPostbuildRecorder.class.getName()).log(Level.SEVERE, "Scriptler File, " + target_file + " Was Not Found");
+                }
+            } else {
+                external_file = new File(match.group(2));
+                Logger.getLogger(GroovyPostbuildRecorder.class.getName()).log(Level.SEVERE, "External file being used: " + external_file);                
             }
-
-
         }
 
         try {
 
-            if (scriptler_file != null) {
-                FileInputStream fis = new FileInputStream(scriptler_file);
-                byte[] data = new byte[(int) scriptler_file.length()];
+            if (external_file != null) {
+                FileInputStream fis = new FileInputStream(external_file);
+                byte[] data = new byte[(int) external_file.length()];
                 fis.read(data);
                 fis.close();
                 String s = new String(data, "UTF-8");
