@@ -284,7 +284,14 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 			case 2: scriptFailureResult = Result.FAILURE; break;
 		}
 		BadgeManager badgeManager = new BadgeManager(build, listener, scriptFailureResult, getDescriptor().isSecurityEnabled());
-        ClassLoader cl = new URLClassLoader(getClassPath(), getClass().getClassLoader());
+        //ClassLoader cl = new URLClassLoader(getClassPath(), getClass().getClassLoader());
+		// Intentionally commented the previous CL instantiation because Groovy script doesn't
+		// have access to plugins. I.e. import statement could NOT find anything
+		ClassLoader cl = Hudson.getInstance().getPluginManager().uberClassLoader;
+        if (cl == null) {
+            cl = Thread.currentThread().getContextClassLoader();
+        }
+
 		GroovyShell shell = new GroovyShell(cl);
         shell.setVariable("manager", badgeManager);
         try {
