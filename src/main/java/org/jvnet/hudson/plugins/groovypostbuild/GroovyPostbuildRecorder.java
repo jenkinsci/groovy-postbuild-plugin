@@ -68,12 +68,13 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 
     public static class BadgeManager {
 		private AbstractBuild<?, ?> build;
+		private final Launcher launcher;
 		private final BuildListener listener;
 		private final Result scriptFailureResult;
 		private final Set<AbstractBuild<?, ?>> builds = new HashSet<AbstractBuild<?,?>>();
 		private EnvVars envVars;
 
-		public BadgeManager(AbstractBuild<?, ?> build, BuildListener listener, Result scriptFailureResult) {
+		public BadgeManager(AbstractBuild<?, ?> build,  final Launcher launcher, final BuildListener listener, Result scriptFailureResult) {
 			setBuild(build);
 			try {
 				this.envVars = build.getEnvironment(listener);
@@ -83,6 +84,7 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 			} catch (IOException e){
 				e.printStackTrace(listener.getLogger());
 			}
+			this.launcher = launcher;
 			this.listener = listener;
 			this.scriptFailureResult = scriptFailureResult;
 		}
@@ -121,7 +123,12 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 			setBuild(newBuild);
 			return (newBuild != null);
 		}
-        // TBD: @Whitelisted
+
+		public Launcher getLauncher() {
+			return launcher;
+		}
+
+		// TBD: @Whitelisted
 		public BuildListener getListener() {
 			return listener;
 		}
@@ -353,7 +360,7 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 			case 1: scriptFailureResult = Result.UNSTABLE; break;
 			case 2: scriptFailureResult = Result.FAILURE; break;
 		}
-		BadgeManager badgeManager = new BadgeManager(build, listener, scriptFailureResult);
+		BadgeManager badgeManager = new BadgeManager(build, launcher, listener, scriptFailureResult);
         ClassLoader cl = Jenkins.getInstance().getPluginManager().uberClassLoader;
         Binding binding = new Binding();
         binding.setVariable("manager", badgeManager);

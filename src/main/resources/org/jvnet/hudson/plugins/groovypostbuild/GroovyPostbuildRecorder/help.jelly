@@ -6,6 +6,7 @@
   <ul>
     <li><code>hudson</code> - the current Hudson instance (<a href="http://javadoc.jenkins-ci.org/?hudson/model/Hudson.html">javadoc</a>).</li>
     <li><code>build</code> - the current build (<a href="http://javadoc.jenkins-ci.org/?hudson/model/AbstractBuild.html">javadoc</a>).</li>
+    <li><code>launcher</code> - the current launcher (<a href="http://javadoc.jenkins-ci.org/?hudson/Launcher.html">javadoc</a>).</li>
     <li><code>listener</code> - the build listener (<a href="http://javadoc.jenkins-ci.org/?hudson/model/BuildListener.html">javadoc</a>).</li>
     <P/>
     <li><code>contains(file, regexp)</code> - returns true if the given file contains a line matching <i>regexp</i>.</li>
