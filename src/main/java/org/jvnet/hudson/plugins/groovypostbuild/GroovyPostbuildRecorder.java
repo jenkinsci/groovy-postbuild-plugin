@@ -61,6 +61,7 @@ import org.jenkinsci.plugins.scriptsecurity.scripts.ClasspathEntry;
 public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregatable {
 	private static final Logger LOGGER = Logger.getLogger(GroovyPostbuildRecorder.class.getName());
 
+	private String filePath;
 	@Deprecated private String groovyScript;
     private SecureGroovyScript script;
 	private final int behavior;
@@ -320,7 +321,8 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 	}
 
 	@DataBoundConstructor
-	public GroovyPostbuildRecorder(SecureGroovyScript script, int behavior, boolean runForMatrixParent) {
+	public GroovyPostbuildRecorder(String filePath, SecureGroovyScript script, int behavior, boolean runForMatrixParent) {
+		this.filePath = filePath;
         this.script = script.configuringWithNonKeyItem();
 		this.behavior = behavior;
 		this.runForMatrixParent = runForMatrixParent;
@@ -359,6 +361,13 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 	public final boolean perform(final AbstractBuild<?, ?> build, final Launcher launcher, final BuildListener listener) throws InterruptedException, IOException {
         Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 		boolean scriptResult = true;
+		
+		if (this.filePath != null && this.filePath != "") {
+			FilePath fp = new FilePath(this.filePath);
+			String contentOfGroovyFile = new Scanner(fp.read()).useDelimiter("\\A").next();
+			
+		}
+		
 		LOGGER.fine("perform() called for script");
 		LOGGER.fine("behavior: " + behavior);
 		Result scriptFailureResult = Result.SUCCESS;
@@ -397,6 +406,10 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 
 	public SecureGroovyScript getScript() {
 		return script;
+	}
+	
+	public String getFilePath() {
+		return filePath;
 	}
 
 	public int getBehavior() {
