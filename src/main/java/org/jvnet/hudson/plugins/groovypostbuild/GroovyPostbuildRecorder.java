@@ -63,6 +63,7 @@ import org.jenkinsci.plugins.scriptsecurity.scripts.ClasspathEntry;
 public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregatable {
 	private static final Logger LOGGER = Logger.getLogger(GroovyPostbuildRecorder.class.getName());
 
+	private boolean groovyFromFile;
 	private String filePath;
 	@Deprecated private String groovyScript;
     private SecureGroovyScript script;
@@ -323,10 +324,12 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 	}
 
 	@DataBoundConstructor
-	public GroovyPostbuildRecorder(String filePath, SecureGroovyScript script, int behavior, boolean runForMatrixParent) 
+	public GroovyPostbuildRecorder(boolean groovyFromFile, String filePath, SecureGroovyScript script, int behavior, boolean runForMatrixParent) 
 			throws IOException {
+		
+		this.groovyFromFile = groovyFromFile;
 		this.filePath = filePath;
-		if (this.filePath != null && !this.filePath.trim().equals("")) {
+		if (this.groovyFromFile == true && this.filePath != null && !this.filePath.trim().equals("")) {
 			try {
 				// Read file
 				FilePath fp = new FilePath(new File(this.filePath));
@@ -420,6 +423,10 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 		}
 	}
 
+	public boolean getGroovyFromFile() {
+		return this.groovyFromFile;
+	}
+	
     public final BuildStepMonitor getRequiredMonitorService() {
 		return BuildStepMonitor.NONE;
 	}
