@@ -25,14 +25,9 @@ THE SOFTWARE.
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
   <f:entry/><!-- just for help.html -->
   
-  <f:block>
-  	<f:optionalBlock title="Groovy script from file" name="groovyFromFile">
-  		<f:entry title="File path">
-  			<f:textbox name="filePath" value="" />
-  		</f:entry>
-  	</f:optionalBlock>
-  </f:block>
-  
+  <f:entry title="File path" field="groovyFilePath">
+  	<f:textbox />
+  </f:entry>
   
   <f:property field="script"/>
 

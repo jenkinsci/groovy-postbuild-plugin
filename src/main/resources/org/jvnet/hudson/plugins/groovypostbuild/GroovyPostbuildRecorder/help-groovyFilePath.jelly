@@ -1,0 +1,5 @@
+<div>
+<p>
+Instead of writing a script, you can enter a path to a Groovy script on the computer, where the job is running. If this script is found successfully, this Groovy script will be run.
+</p>
+</div>

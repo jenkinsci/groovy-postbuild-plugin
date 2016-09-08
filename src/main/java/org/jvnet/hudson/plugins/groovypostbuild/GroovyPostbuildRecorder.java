@@ -63,8 +63,7 @@ import org.jenkinsci.plugins.scriptsecurity.scripts.ClasspathEntry;
 public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregatable {
 	private static final Logger LOGGER = Logger.getLogger(GroovyPostbuildRecorder.class.getName());
 
-	private boolean groovyFromFile;
-	private String filePath;
+	private String groovyFilePath;
 	@Deprecated private String groovyScript;
     private SecureGroovyScript script;
 	private final int behavior;
@@ -323,20 +322,19 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 		}
 	}
 
+    
 	@DataBoundConstructor
 	public GroovyPostbuildRecorder(
-			boolean groovyFromFile, 
-			String filePath, 
+			String groovyFilePath, 
 			SecureGroovyScript script, 
 			int behavior, 
 			boolean runForMatrixParent) {
-		
-		this.groovyFromFile = groovyFromFile;
-		this.filePath = filePath;
-		if (this.groovyFromFile == true && this.filePath != null && !this.filePath.trim().equals("")) {
+				
+		this.groovyFilePath = groovyFilePath;
+		if (this.groovyFilePath != null && !this.groovyFilePath.trim().equals("")) {
 			try {
 				// Read file
-				FilePath fp = new FilePath(new File(this.filePath));
+				FilePath fp = new FilePath(new File(this.groovyFilePath));
 				String contentOfGroovyFile = new Scanner(fp.read()).useDelimiter("\\A").next();
 				
 				// take the same values from UI, except the content
@@ -346,13 +344,14 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 						script.isSandbox(),
 						script.getClasspath());
 				this.script = scriptFromFile;
+				this.script = script.configuringWithNonKeyItem();
 			} catch(IOException ioexc) {
 				// Write error message into logger
-				LOGGER.log(Level.WARNING, "[GroovyPostbuild] Error loading file " + this.filePath, ioexc);
+				LOGGER.log(Level.WARNING, "[GroovyPostbuild] Error loading file " + this.groovyFilePath, ioexc);
 				// and then use default behaviour
 				this.script = script.configuringWithNonKeyItem();
 			} catch (InterruptedException intexc) {
-				LOGGER.log(Level.WARNING, "[GroovyPostbuild] InterruptedException occurred with file " + this.filePath, intexc);
+				LOGGER.log(Level.WARNING, "[GroovyPostbuild] InterruptedException occurred with file " + this.groovyFilePath, intexc);
 				// no default behaviour
 			}
 		} else {
@@ -426,10 +425,6 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 			return true;
 		}
 	}
-
-	public boolean getGroovyFromFile() {
-		return this.groovyFromFile;
-	}
 	
     public final BuildStepMonitor getRequiredMonitorService() {
 		return BuildStepMonitor.NONE;
@@ -439,8 +434,8 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 		return script;
 	}
 	
-	public String getFilePath() {
-		return filePath;
+	public String getGroovyFilePath() {
+		return groovyFilePath;
 	}
 
 	public int getBehavior() {
