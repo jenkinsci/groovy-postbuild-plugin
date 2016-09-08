@@ -324,8 +324,12 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 	}
 
 	@DataBoundConstructor
-	public GroovyPostbuildRecorder(boolean groovyFromFile, String filePath, SecureGroovyScript script, int behavior, boolean runForMatrixParent) 
-			throws IOException {
+	public GroovyPostbuildRecorder(
+			boolean groovyFromFile, 
+			String filePath, 
+			SecureGroovyScript script, 
+			int behavior, 
+			boolean runForMatrixParent) {
 		
 		this.groovyFromFile = groovyFromFile;
 		this.filePath = filePath;
