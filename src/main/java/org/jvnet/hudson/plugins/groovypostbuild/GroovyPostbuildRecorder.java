@@ -336,15 +336,14 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 				// Read file
 				FilePath fp = new FilePath(new File(this.groovyFilePath));
 				String contentOfGroovyFile = new Scanner(fp.read()).useDelimiter("\\A").next();
-				
+					
 				// take the same values from UI, except the content
 				// of the script.
-				SecureGroovyScript scriptFromFile = new SecureGroovyScript(
+				this.script = new SecureGroovyScript(
 						contentOfGroovyFile, 
 						script.isSandbox(),
 						script.getClasspath());
-				this.script = scriptFromFile;
-				this.script = script.configuringWithNonKeyItem();
+				this.script = this.script.configuringWithNonKeyItem();
 			} catch(IOException ioexc) {
 				// Write error message into logger
 				LOGGER.log(Level.WARNING, "[GroovyPostbuild] Error loading file " + this.groovyFilePath, ioexc);
