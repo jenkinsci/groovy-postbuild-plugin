@@ -26,6 +26,7 @@ package org.jvnet.hudson.plugins.groovypostbuild;
 import groovy.lang.Binding;
 import hudson.AbortException;
 import hudson.EnvVars;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.matrix.MatrixAggregatable;
 import hudson.matrix.MatrixAggregator;
@@ -42,6 +43,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,6 +63,7 @@ import org.jenkinsci.plugins.scriptsecurity.scripts.ClasspathEntry;
 public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregatable {
 	private static final Logger LOGGER = Logger.getLogger(GroovyPostbuildRecorder.class.getName());
 
+	private String groovyFilePath;
 	@Deprecated private String groovyScript;
     private SecureGroovyScript script;
 	private final int behavior;
@@ -319,9 +322,40 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 		}
 	}
 
+    
 	@DataBoundConstructor
-	public GroovyPostbuildRecorder(SecureGroovyScript script, int behavior, boolean runForMatrixParent) {
-        this.script = script.configuringWithNonKeyItem();
+	public GroovyPostbuildRecorder(
+			String groovyFilePath, 
+			SecureGroovyScript script, 
+			int behavior, 
+			boolean runForMatrixParent) {
+				
+		this.groovyFilePath = groovyFilePath;
+		if (this.groovyFilePath != null && !this.groovyFilePath.trim().equals("")) {
+			try {
+				// Read file
+				FilePath fp = new FilePath(new File(this.groovyFilePath));
+				String contentOfGroovyFile = new Scanner(fp.read()).useDelimiter("\\A").next();
+					
+				// take the same values from UI, except the content
+				// of the script.
+				this.script = new SecureGroovyScript(
+						contentOfGroovyFile, 
+						script.isSandbox(),
+						script.getClasspath());
+				this.script = this.script.configuringWithNonKeyItem();
+			} catch(IOException ioexc) {
+				// Write error message into logger
+				LOGGER.log(Level.WARNING, "[GroovyPostbuild] Error loading file " + this.groovyFilePath, ioexc);
+				// and then use default behaviour
+				this.script = script.configuringWithNonKeyItem();
+			} catch (InterruptedException intexc) {
+				LOGGER.log(Level.WARNING, "[GroovyPostbuild] InterruptedException occurred with file " + this.groovyFilePath, intexc);
+				// no default behaviour
+			}
+		} else {
+			this.script = script.configuringWithNonKeyItem();
+		}
 		this.behavior = behavior;
 		this.runForMatrixParent = runForMatrixParent;
 	}
@@ -390,13 +424,17 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 			return true;
 		}
 	}
-
+	
     public final BuildStepMonitor getRequiredMonitorService() {
 		return BuildStepMonitor.NONE;
 	}
 
 	public SecureGroovyScript getScript() {
 		return script;
+	}
+	
+	public String getGroovyFilePath() {
+		return groovyFilePath;
 	}
 
 	public int getBehavior() {
