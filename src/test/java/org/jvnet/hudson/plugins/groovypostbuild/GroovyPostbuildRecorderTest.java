@@ -24,8 +24,12 @@
 
 package org.jvnet.hudson.plugins.groovypostbuild;
 
+import static org.hamcrest.Matchers.emptyIterable;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -37,13 +41,21 @@ import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Item;
 import hudson.model.Result;
 
+import hudson.security.GlobalMatrixAuthorizationStrategy;
+import hudson.security.Permission;
+import jenkins.model.Jenkins;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ClasspathEntry;
+import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.UnstableBuilder;
@@ -51,6 +63,9 @@ import org.jvnet.hudson.test.UnstableBuilder;
 public class GroovyPostbuildRecorderTest {
     @ClassRule
     public static JenkinsRule j = new JenkinsRule();
+
+    @Rule
+    public TemporaryFolder tmp = new TemporaryFolder();
     
     private static final String TEXT_ON_FAILED = "Groovy";
     
@@ -437,5 +452,66 @@ public class GroovyPostbuildRecorderTest {
         FreeStyleBuild b = p.scheduleBuild2(0).get();
         j.assertBuildStatus(Result.FAILURE, b);
         assertEquals(TEXT_ON_FAILED, b.getAction(GroovyPostbuildAction.class).getText());
+    }
+
+    @Test
+    public void classPathApproval() throws Exception {
+        // Authorized to manage item but not RUN_SCRIPT - otherwise the CP would be approved by saving it
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        GlobalMatrixAuthorizationStrategy gmas = new GlobalMatrixAuthorizationStrategy();
+        gmas.add(Jenkins.READ, "devel");
+        for (Permission p : Item.PERMISSIONS.getPermissions()) {
+            gmas.add(p, "devel");
+        }
+        j.jenkins.setAuthorizationStrategy(gmas);
+
+        // Directory class path
+        FreeStyleProject dirCP = j.createFreeStyleProject();
+        String directory = tmp.newFolder().getAbsolutePath();
+        dirCP.getPublishersList().add(new GroovyPostbuildRecorder(
+                new SecureGroovyScript(
+                        "manager.addShortText('testing')",
+                        false,
+                        Collections.singletonList(new ClasspathEntry(directory))
+                ),0, false
+        ));
+
+        ScriptApproval sa = ScriptApproval.get();
+        assertThat(sa.getApprovedClasspathEntries(), emptyIterable());
+        assertThat(sa.getPendingClasspathEntries(), emptyIterable());
+
+        // File class path
+        FreeStyleBuild b = dirCP.scheduleBuild2(0).get();
+        j.assertLogContains("UnapprovedClasspathException", b);
+        j.assertLogContains("classpath entry file:" + directory + "/ is a class directory, which are not allowed", b);
+        assertThat(sa.getApprovedClasspathEntries(), emptyIterable());
+        assertThat(sa.getPendingClasspathEntries(), emptyIterable());
+
+        FreeStyleProject fileCP = j.createFreeStyleProject();
+        File file = tmp.newFile("script.groovy");
+        FileUtils.write(file, "def foo() { /*code here*/ }");
+        fileCP.getPublishersList().add(new GroovyPostbuildRecorder(
+                new SecureGroovyScript(
+                        "foo()",
+                        false,
+                        Collections.singletonList(new ClasspathEntry(file.getAbsolutePath()))
+                ),0,false
+        ));
+
+        assertThat(sa.getApprovedClasspathEntries(), emptyIterable());
+        // Approval request created when configured
+        assertThat(sa.getPendingClasspathEntries().get(0).getURL(), equalTo(file.toURI().toURL()));
+
+        b = fileCP.scheduleBuild2(0).get();
+        j.assertLogContains("UnapprovedClasspathException", b);
+        j.assertLogContains("classpath entry file:" + file, b);
+        j.assertLogContains(" not yet approved for use", b);
+        assertThat(sa.getApprovedClasspathEntries(), emptyIterable());
+
+        sa.approveClasspathEntry(sa.getPendingClasspathEntries().get(0).getHash());
+        assertThat(sa.getPendingClasspathEntries(), emptyIterable());
+
+        b = fileCP.scheduleBuild2(0).get();
+        j.assertLogNotContains("UnapprovedClasspathException", b);
     }
 }
