@@ -75,7 +75,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>script-security</artifactId>
-            <version>1.29-SNAPSHOT</version>
+            <version>1.19</version> <!-- JENKINS-24399 -->
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>

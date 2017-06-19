@@ -25,8 +25,8 @@
 package org.jvnet.hudson.plugins.groovypostbuild;
 
 import static org.hamcrest.Matchers.emptyIterable;
-import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.*;
 
 import java.io.File;
@@ -473,17 +473,16 @@ public class GroovyPostbuildRecorderTest {
                         "manager.addShortText('testing')",
                         false,
                         Collections.singletonList(new ClasspathEntry(directory))
-                ),0, false
+                ),2, false
         ));
 
         ScriptApproval sa = ScriptApproval.get();
         assertThat(sa.getApprovedClasspathEntries(), emptyIterable());
         assertThat(sa.getPendingClasspathEntries(), emptyIterable());
 
-        // File class path
+        // Directories are ignroed and not proposed for approval
         FreeStyleBuild b = dirCP.scheduleBuild2(0).get();
-        j.assertLogContains("UnapprovedClasspathException", b);
-        j.assertLogContains("classpath entry file:" + directory + "/ is a class directory, which are not allowed", b);
+        j.assertBuildStatus(Result.FAILURE, b);
         assertThat(sa.getApprovedClasspathEntries(), emptyIterable());
         assertThat(sa.getPendingClasspathEntries(), emptyIterable());
 
@@ -492,10 +491,10 @@ public class GroovyPostbuildRecorderTest {
         FileUtils.write(file, "def foo() { /*code here*/ }");
         fileCP.getPublishersList().add(new GroovyPostbuildRecorder(
                 new SecureGroovyScript(
-                        "foo()",
-                        false,
+                        "manager.addShortText('testing')",
+                        true,
                         Collections.singletonList(new ClasspathEntry(file.getAbsolutePath()))
-                ),0,false
+                ),2,false
         ));
 
         assertThat(sa.getApprovedClasspathEntries(), emptyIterable());
@@ -503,15 +502,14 @@ public class GroovyPostbuildRecorderTest {
         assertThat(sa.getPendingClasspathEntries().get(0).getURL(), equalTo(file.toURI().toURL()));
 
         b = fileCP.scheduleBuild2(0).get();
-        j.assertLogContains("UnapprovedClasspathException", b);
-        j.assertLogContains("classpath entry file:" + file, b);
-        j.assertLogContains(" not yet approved for use", b);
+        j.assertBuildStatus(Result.FAILURE, b);
         assertThat(sa.getApprovedClasspathEntries(), emptyIterable());
 
+        // Script successfully executed once approved
         sa.approveClasspathEntry(sa.getPendingClasspathEntries().get(0).getHash());
-        assertThat(sa.getPendingClasspathEntries(), emptyIterable());
 
-        b = fileCP.scheduleBuild2(0).get();
-        j.assertLogNotContains("UnapprovedClasspathException", b);
+        assertThat(sa.getPendingClasspathEntries(), emptyIterable());
+        assertThat(sa.getApprovedClasspathEntries(), not(emptyIterable()));
+        j.buildAndAssertSuccess(fileCP);
     }
 }
