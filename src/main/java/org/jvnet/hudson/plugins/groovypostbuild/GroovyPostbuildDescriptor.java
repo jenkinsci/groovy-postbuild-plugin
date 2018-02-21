@@ -31,6 +31,7 @@ import hudson.matrix.MatrixProject;
 import hudson.model.AbstractProject;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
+import org.kohsuke.stapler.StaplerRequest;
 
 @Extension
 public class GroovyPostbuildDescriptor extends BuildStepDescriptor<Publisher> {
@@ -70,11 +71,11 @@ public class GroovyPostbuildDescriptor extends BuildStepDescriptor<Publisher> {
 
     /**
      * Check whether the configuring model is {@link MatrixProject}. Called from jelly.
-     * 
+     *
      * Note: Caller should pass it for the model is not bound to
      * {@link StaplerRequest#findAncestorObject(Class)}
      * when called via hetelo-list.
-     * 
+     *
      * @param it
      * @return true if the target model is {@link MatrixProject}
      */

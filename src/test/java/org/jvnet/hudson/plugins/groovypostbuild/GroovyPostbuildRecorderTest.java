@@ -48,6 +48,8 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.UnstableBuilder;
 
+import com.jenkinsci.plugins.badge.action.BadgeAction;
+
 public class GroovyPostbuildRecorderTest {
     @ClassRule
     public static JenkinsRule j = new JenkinsRule();
@@ -79,9 +81,9 @@ public class GroovyPostbuildRecorderTest {
         MatrixBuild b = p.scheduleBuild2(0).get();
         j.assertBuildStatusSuccess(b);
         
-        assertEquals("parent", b.getAction(GroovyPostbuildAction.class).getText());
-        assertEquals("value1", b.getRun(new Combination(axisList, "value1")).getAction(GroovyPostbuildAction.class).getText());
-        assertEquals("value2", b.getRun(new Combination(axisList, "value2")).getAction(GroovyPostbuildAction.class).getText());
+        assertEquals("parent", b.getAction(BadgeAction.class).getText());
+        assertEquals("value1", b.getRun(new Combination(axisList, "value1")).getAction(BadgeAction.class).getText());
+        assertEquals("value2", b.getRun(new Combination(axisList, "value2")).getAction(BadgeAction.class).getText());
     }
     
     @Test
@@ -94,9 +96,9 @@ public class GroovyPostbuildRecorderTest {
         MatrixBuild b = p.scheduleBuild2(0).get();
         j.assertBuildStatusSuccess(b);
         
-        assertNull(b.getAction(GroovyPostbuildAction.class));
-        assertEquals("value1", b.getRun(new Combination(axisList, "value1")).getAction(GroovyPostbuildAction.class).getText());
-        assertEquals("value2", b.getRun(new Combination(axisList, "value2")).getAction(GroovyPostbuildAction.class).getText());
+        assertNull(b.getAction(BadgeAction.class));
+        assertEquals("value1", b.getRun(new Combination(axisList, "value1")).getAction(BadgeAction.class).getText());
+        assertEquals("value2", b.getRun(new Combination(axisList, "value2")).getAction(BadgeAction.class).getText());
     }
     
     /**
@@ -124,7 +126,7 @@ public class GroovyPostbuildRecorderTest {
             
             FreeStyleBuild b = p.scheduleBuild2(0).get();
             j.assertBuildStatus(Result.SUCCESS, b);
-            assertEquals("testing", b.getAction(GroovyPostbuildAction.class).getText());
+            assertEquals("testing", b.getAction(BadgeAction.class).getText());
         }
     }
     
@@ -155,7 +157,7 @@ public class GroovyPostbuildRecorderTest {
             
             FreeStyleBuild b = p.scheduleBuild2(0).get();
             j.assertBuildStatus(Result.UNSTABLE, b);
-            assertEquals("testing", b.getAction(GroovyPostbuildAction.class).getText());
+            assertEquals("testing", b.getAction(BadgeAction.class).getText());
         }
     }
     
@@ -186,7 +188,7 @@ public class GroovyPostbuildRecorderTest {
             
             FreeStyleBuild b = p.scheduleBuild2(0).get();
             j.assertBuildStatus(Result.FAILURE, b);
-            assertEquals("testing", b.getAction(GroovyPostbuildAction.class).getText());
+            assertEquals("testing", b.getAction(BadgeAction.class).getText());
         }
     }
     
@@ -213,7 +215,7 @@ public class GroovyPostbuildRecorderTest {
         
         FreeStyleBuild b = p.scheduleBuild2(0).get();
         j.assertBuildStatus(Result.SUCCESS, b);
-        assertEquals(TEXT_ON_FAILED, b.getAction(GroovyPostbuildAction.class).getText());
+        assertEquals(TEXT_ON_FAILED, b.getAction(BadgeAction.class).getText());
     }
     
     
@@ -242,7 +244,7 @@ public class GroovyPostbuildRecorderTest {
         
         FreeStyleBuild b = p.scheduleBuild2(0).get();
         j.assertBuildStatus(Result.UNSTABLE, b);
-        assertEquals(TEXT_ON_FAILED, b.getAction(GroovyPostbuildAction.class).getText());
+        assertEquals(TEXT_ON_FAILED, b.getAction(BadgeAction.class).getText());
     }
     
     /**
@@ -270,7 +272,7 @@ public class GroovyPostbuildRecorderTest {
         
         FreeStyleBuild b = p.scheduleBuild2(0).get();
         j.assertBuildStatus(Result.FAILURE, b);
-        assertEquals(TEXT_ON_FAILED, b.getAction(GroovyPostbuildAction.class).getText());
+        assertEquals(TEXT_ON_FAILED, b.getAction(BadgeAction.class).getText());
     }
     
     /**
@@ -296,7 +298,7 @@ public class GroovyPostbuildRecorderTest {
         
         FreeStyleBuild b = p.scheduleBuild2(0).get();
         j.assertBuildStatus(Result.UNSTABLE, b);
-        assertEquals(TEXT_ON_FAILED, b.getAction(GroovyPostbuildAction.class).getText());
+        assertEquals(TEXT_ON_FAILED, b.getAction(BadgeAction.class).getText());
     }
     
     
@@ -325,7 +327,7 @@ public class GroovyPostbuildRecorderTest {
         
         FreeStyleBuild b = p.scheduleBuild2(0).get();
         j.assertBuildStatus(Result.UNSTABLE, b);
-        assertEquals(TEXT_ON_FAILED, b.getAction(GroovyPostbuildAction.class).getText());
+        assertEquals(TEXT_ON_FAILED, b.getAction(BadgeAction.class).getText());
     }
     
     /**
@@ -353,7 +355,7 @@ public class GroovyPostbuildRecorderTest {
         
         FreeStyleBuild b = p.scheduleBuild2(0).get();
         j.assertBuildStatus(Result.FAILURE, b);
-        assertEquals(TEXT_ON_FAILED, b.getAction(GroovyPostbuildAction.class).getText());
+        assertEquals(TEXT_ON_FAILED, b.getAction(BadgeAction.class).getText());
     }
     
     /**
@@ -379,7 +381,7 @@ public class GroovyPostbuildRecorderTest {
         
         FreeStyleBuild b = p.scheduleBuild2(0).get();
         j.assertBuildStatus(Result.FAILURE, b);
-        assertEquals(TEXT_ON_FAILED, b.getAction(GroovyPostbuildAction.class).getText());
+        assertEquals(TEXT_ON_FAILED, b.getAction(BadgeAction.class).getText());
     }
     
     
@@ -408,7 +410,7 @@ public class GroovyPostbuildRecorderTest {
         
         FreeStyleBuild b = p.scheduleBuild2(0).get();
         j.assertBuildStatus(Result.FAILURE, b);
-        assertEquals(TEXT_ON_FAILED, b.getAction(GroovyPostbuildAction.class).getText());
+        assertEquals(TEXT_ON_FAILED, b.getAction(BadgeAction.class).getText());
     }
     
     /**
@@ -436,6 +438,6 @@ public class GroovyPostbuildRecorderTest {
         
         FreeStyleBuild b = p.scheduleBuild2(0).get();
         j.assertBuildStatus(Result.FAILURE, b);
-        assertEquals(TEXT_ON_FAILED, b.getAction(GroovyPostbuildAction.class).getText());
+        assertEquals(TEXT_ON_FAILED, b.getAction(BadgeAction.class).getText());
     }
 }

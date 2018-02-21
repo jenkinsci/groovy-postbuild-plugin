@@ -33,7 +33,6 @@ import hudson.matrix.MatrixBuild;
 import hudson.model.*;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Recorder;
-import hudson.util.IOUtils;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.*;
@@ -56,7 +55,10 @@ import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ClasspathEntry;
 
-/** This class associates {@link GroovyPostbuildAction}s to a build. */
+import com.jenkinsci.plugins.badge.action.BadgeAction;
+import com.jenkinsci.plugins.badge.action.BadgeSummaryAction;
+
+/** This class associates {@link BadgeAction}s to a build. */
 @SuppressWarnings("unchecked")
 public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregatable {
 	private static final Logger LOGGER = Logger.getLogger(GroovyPostbuildRecorder.class.getName());
@@ -97,15 +99,25 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 		public void println(String string){
 			this.listener.getLogger().println(string);
 		}
-		
+
         @Whitelisted
 		public String getEnvVariable(String key) throws IOException, InterruptedException{
 			return this.envVars.get(key);
 		}
-		
-        // TBD: @Whitelisted
+
+		/**
+		 * @deprecated  use ${@link #getJenkins()}
+		 * @return the jenkins insance
+		 */
+		@Deprecated
+		// TBD: @Whitelisted
 		public Hudson getHudson() {
-			return Hudson.getInstance();
+			return (Hudson) getJenkins();
+		}
+
+		// TBD: @Whitelisted
+		public Jenkins getJenkins() {
+			return Jenkins.getInstance();
 		}
         // TBD: @Whitelisted
 		public Run<?, ?> getBuild() {
@@ -129,31 +141,31 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 
         @Whitelisted
 		public void addShortText(String text) {
-			build.getActions().add(GroovyPostbuildAction.createShortText(text));
+			build.addAction(BadgeAction.createShortText(text));
 		}
         @Whitelisted
 		public void addShortText(String text, String color, String background, String border, String borderColor) {
-			build.getActions().add(GroovyPostbuildAction.createShortText(text, color, background, border, borderColor));
+			build.addAction(BadgeAction.createShortText(text, color, background, border, borderColor));
 		}
         @Whitelisted
 		public void addBadge(String icon, String text) {
-			build.getActions().add(GroovyPostbuildAction.createBadge(icon, text));
+			build.addAction(BadgeAction.createBadge(icon, text));
 		}
         @Whitelisted
 		public void addBadge(String icon, String text, String link) {
-			build.getActions().add(GroovyPostbuildAction.createBadge(icon, text, link));
+			build.addAction(BadgeAction.createBadge(icon, text, link));
 		}
         @Whitelisted
 		public void addInfoBadge(String text) {
-			build.getActions().add(GroovyPostbuildAction.createInfoBadge(text));
+			build.addAction(BadgeAction.createInfoBadge(text));
 		}
         @Whitelisted
 		public void addWarningBadge(String text) {
-			build.getActions().add(GroovyPostbuildAction.createWarningBadge(text));
+			build.addAction(BadgeAction.createWarningBadge(text));
 		}
         @Whitelisted
 		public void addErrorBadge(String text) {
-			build.getActions().add(GroovyPostbuildAction.createErrorBadge(text));
+			build.addAction(BadgeAction.createErrorBadge(text));
 		}
 
         @Whitelisted
@@ -164,43 +176,44 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 
 		@Whitelisted
 		public void removeBadges() {
-			List<Action> actions = build.getActions();
-			List<GroovyPostbuildAction> badgeActions = build.getActions(GroovyPostbuildAction.class);
-			for(GroovyPostbuildAction action : badgeActions) {
+			List<? extends Action> actions = build.getAllActions();
+			List<BadgeAction> badgeActions = build.getActions(BadgeAction.class);
+			for(BadgeAction action : badgeActions) {
 				actions.remove(action);
 			}
 		}
 		@Whitelisted
 		public void removeBadge(int index) {
-			List<Action> actions = build.getActions();
-			List<GroovyPostbuildAction> badgeActions = build.getActions(GroovyPostbuildAction.class);
+			List<? extends Action> actions = build.getAllActions();
+			List<BadgeAction> badgeActions = build.getActions(BadgeAction.class);
 			if(index < 0 || index >= badgeActions.size()) {
 				listener.error("Invalid badge index: " + index + ". Allowed values: 0 .. " + (badgeActions.size()-1));
 			} else {
-				GroovyPostbuildAction action = badgeActions.get(index);
+				BadgeAction action = badgeActions.get(index);
 				actions.remove(action);
 			}
 		}
 
-		public GroovyPostbuildSummaryAction createSummary(String icon) {
-			GroovyPostbuildSummaryAction action = new GroovyPostbuildSummaryAction(icon);
-			build.getActions().add(action);
+		public BadgeSummaryAction createSummary(String icon) {
+			BadgeSummaryAction action = new BadgeSummaryAction(icon);
+			build.addAction(action);
 			return action;
 		}
 		public void removeSummaries() {
-			List<Action> actions = build.getActions();
-			List<GroovyPostbuildSummaryAction> summaryActions = build.getActions(GroovyPostbuildSummaryAction.class);
-			for(GroovyPostbuildSummaryAction action : summaryActions) {
+			List<? extends Action> actions = build.getAllActions();
+			List<BadgeSummaryAction> summaryActions = build.getActions(BadgeSummaryAction.class);
+			actions.removeAll(summaryActions);
+			for(BadgeSummaryAction action : summaryActions) {
 				actions.remove(action);
 			}
 		}
 		public void removeSummary(int index) {
-			List<Action> actions = build.getActions();
-			List<GroovyPostbuildSummaryAction> summaryActions = build.getActions(GroovyPostbuildSummaryAction.class);
+			List<? extends Action> actions = build.getAllActions();
+			List<BadgeSummaryAction> summaryActions = build.getActions(BadgeSummaryAction.class);
 			if(index < 0 || index >= summaryActions.size()) {
 				listener.error("Invalid summary index: " + index + ". Allowed values: 0 .. " + (summaryActions.size()-1));
 			} else {
-				GroovyPostbuildSummaryAction action = summaryActions.get(index);
+				BadgeSummaryAction action = summaryActions.get(index);
 				actions.remove(action);
 			}
 		}
@@ -231,7 +244,7 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 			e.printStackTrace(new PrintWriter(writer));
 			boolean isError = scriptFailureResult.isWorseThan(Result.UNSTABLE);
 			String icon = isError ? "error" : "warning";
-			GroovyPostbuildSummaryAction summary = createSummary(icon + ".gif");
+			BadgeSummaryAction summary = createSummary(icon + ".gif");
 			summary.appendText("<b><font color=\"red\">Groovy script failed:</font></b><br><pre>", false);
 			summary.appendText(writer.toString(), true);
 			summary.appendText("</pre>", false);
@@ -274,12 +287,10 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 	    public Matcher getMatcher(File f, Charset charset, String regexp) {
 	    	LOGGER.fine("Searching for '" + regexp + "' in '" + f + "'.");
 			Matcher matcher = null;
-			BufferedReader reader = null;
-			try {
+			try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(f), charset))) {
 		    	Pattern pattern = compilePattern(regexp);
 				// Assume default encoding and text files
 				String line;
-				reader = new BufferedReader(new InputStreamReader(new FileInputStream(f), charset));
 				while ((line = reader.readLine()) != null) {
 					Matcher m = pattern.matcher(line);
 					if (m.matches()) {
@@ -290,8 +301,6 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 			} catch (IOException e) {
 				e.printStackTrace(listener.error("Groovy Postbuild: getMatcher(\"" + f + "\", \"" + regexp + "\") failed."));
 				buildScriptFailed(e);
-			} finally {
-				IOUtils.closeQuietly(reader);
 			}
 			return matcher;
 		}
@@ -309,7 +318,7 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 
 		/**
 		 * Test whether the current build is specified type.
-		 * 
+		 *
 		 * @param buildClass
 		 * @return true if the current build is an instance of buildClass
 		 */
@@ -369,7 +378,7 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 			default:scriptFailureResult = Result.SUCCESS; break; // same to 0
 		}
 		BadgeManager badgeManager = new BadgeManager(build, listener, scriptFailureResult);
-        ClassLoader cl = Jenkins.getActiveInstance().getPluginManager().uberClassLoader;
+        ClassLoader cl = Jenkins.getInstance().getPluginManager().uberClassLoader;
         Binding binding = new Binding();
         binding.setVariable("manager", badgeManager);
         try {
@@ -383,7 +392,7 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 		for (Run<?, ?> b : badgeManager.builds) {
 			b.save();
 		}
-		
+
 		if (!scriptResult && scriptFailureResult.isWorseOrEqualTo(Result.FAILURE)){
 			return false;
 		} else {
@@ -402,11 +411,11 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 	public int getBehavior() {
 		return behavior;
 	}
-	
+
 	public boolean isRunForMatrixParent() {
 		return runForMatrixParent;
 	}
-	
+
 	/**
 	 * @param build
 	 * @param launcher
@@ -418,11 +427,11 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 		if (!isRunForMatrixParent()) {
 			return null;
 		}
-		
+
 		return new MatrixAggregator(build, launcher, listener) {
 			/**
 			 * Called when all child builds are finished.
-			 * 
+			 *
 			 * @return
 			 * @throws InterruptedException
 			 * @throws IOException
