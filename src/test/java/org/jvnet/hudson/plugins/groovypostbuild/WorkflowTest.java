@@ -23,23 +23,18 @@
  */
 package org.jvnet.hudson.plugins.groovypostbuild;
 
-import com.jenkinsci.plugins.badge.action.BadgeAction;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.junit.ClassRule;
-import org.junit.Rule;
 import org.junit.Test;
-import org.jvnet.hudson.test.BuildWatcher;
+import static org.junit.Assert.*;
+import org.junit.Rule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
-import static org.junit.Assert.assertEquals;
+import com.jenkinsci.plugins.badge.action.BadgeAction;
 
 public class WorkflowTest {
-
-    @ClassRule
-    public static BuildWatcher buildWatcher = new BuildWatcher();
 
     @Rule
     public JenkinsRule r = new JenkinsRule();

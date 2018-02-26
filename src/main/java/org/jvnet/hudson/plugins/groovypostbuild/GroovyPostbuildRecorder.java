@@ -178,9 +178,7 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 		public void removeBadges() {
 			List<? extends Action> actions = build.getAllActions();
 			List<BadgeAction> badgeActions = build.getActions(BadgeAction.class);
-			for(BadgeAction action : badgeActions) {
-				actions.remove(action);
-			}
+			actions.removeAll(badgeActions);
 		}
 		@Whitelisted
 		public void removeBadge(int index) {
@@ -203,9 +201,6 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 			List<? extends Action> actions = build.getAllActions();
 			List<BadgeSummaryAction> summaryActions = build.getActions(BadgeSummaryAction.class);
 			actions.removeAll(summaryActions);
-			for(BadgeSummaryAction action : summaryActions) {
-				actions.remove(action);
-			}
 		}
 		public void removeSummary(int index) {
 			List<? extends Action> actions = build.getAllActions();

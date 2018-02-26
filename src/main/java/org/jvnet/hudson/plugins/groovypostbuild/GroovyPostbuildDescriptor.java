@@ -31,7 +31,6 @@ import hudson.matrix.MatrixProject;
 import hudson.model.AbstractProject;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
-import org.kohsuke.stapler.StaplerRequest;
 
 @Extension
 public class GroovyPostbuildDescriptor extends BuildStepDescriptor<Publisher> {
