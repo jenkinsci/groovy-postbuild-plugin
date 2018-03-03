@@ -42,17 +42,19 @@ import hudson.model.Result;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ClasspathEntry;
-import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.UnstableBuilder;
+import org.jvnet.hudson.test.recipes.LocalData;
 
 import com.jenkinsci.plugins.badge.action.BadgeAction;
+import com.jenkinsci.plugins.badge.action.BadgeSummaryAction;
 
 public class GroovyPostbuildRecorderTest {
-    @ClassRule
-    public static JenkinsRule j = new JenkinsRule();
+    @Rule
+    public JenkinsRule j = new JenkinsRule();
     
     private static final String TEXT_ON_FAILED = "Groovy";
     
@@ -439,5 +441,50 @@ public class GroovyPostbuildRecorderTest {
         FreeStyleBuild b = p.scheduleBuild2(0).get();
         j.assertBuildStatus(Result.FAILURE, b);
         assertEquals(TEXT_ON_FAILED, b.getAction(BadgeAction.class).getText());
+    }
+
+    @Test
+    @LocalData
+    public void testBadgeMigration() throws Exception {
+        FreeStyleProject p = j.jenkins.getItemByFullName("groovy-postbuild-2.3.1", FreeStyleProject.class);
+        assertNotNull(p);
+
+        // Test that the build configuration migrates successfully
+        {
+            FreeStyleBuild b = p.getLastBuild();
+            assertNotNull(b);
+
+            BadgeAction badgeAction = b.getAction(BadgeAction.class);
+            assertNotNull(badgeAction);
+            assertEquals("/plugin/groovy-postbuild/images/success.gif", badgeAction.getIconPath());
+            assertEquals("shortText", badgeAction.getText());
+            assertEquals("#000000", badgeAction.getColor());
+            assertEquals("#FFFF00", badgeAction.getBackground());
+            assertEquals("1px", badgeAction.getBorder());
+            assertEquals("#C0C000", badgeAction.getBorderColor());
+            assertEquals("https://jenkins.io/", badgeAction.getLink());
+
+            BadgeSummaryAction badgeSummaryAction = b.getAction(BadgeSummaryAction.class);
+            assertNotNull(badgeSummaryAction);
+            assertEquals("info.gif", badgeSummaryAction.getIconPath());
+            assertEquals("<b>summaryText</b>", badgeSummaryAction.getText());
+        }
+
+        // Test that the job configuration migrates successfully
+        {
+            FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+            assertNotNull(b);
+
+            BadgeAction badgeAction = b.getAction(BadgeAction.class);
+            assertNotNull(badgeAction);
+            assertEquals(BadgeAction.getIconPath("success.gif"), badgeAction.getIconPath());
+            assertEquals("shortText", badgeAction.getText());
+            assertEquals("https://jenkins.io/", badgeAction.getLink());
+
+            BadgeSummaryAction badgeSummaryAction = b.getAction(BadgeSummaryAction.class);
+            assertNotNull(badgeSummaryAction);
+            assertEquals("info.gif", badgeSummaryAction.getIconPath());
+            assertEquals("<b>summaryText</b>", badgeSummaryAction.getText());
+        }
     }
 }
