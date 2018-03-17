@@ -26,9 +26,14 @@ package org.jvnet.hudson.plugins.groovypostbuild;
 
 import org.kohsuke.stapler.StaplerRequest;
 
+import com.jenkinsci.plugins.badge.action.BadgeAction;
+
 import hudson.Extension;
+import hudson.init.InitMilestone;
+import hudson.init.Initializer;
 import hudson.matrix.MatrixProject;
 import hudson.model.AbstractProject;
+import hudson.model.Run;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
 
@@ -80,5 +85,12 @@ public class GroovyPostbuildDescriptor extends BuildStepDescriptor<Publisher> {
      */
     public boolean isMatrixProject(Object it) {
         return (it != null) && (it instanceof MatrixProject);
+    }
+
+    @Initializer(before = InitMilestone.PLUGINS_STARTED)
+    public static void addAliases() {
+        // migration from groovy-postbuild 2.3.1- to badge-plugin
+        Run.XSTREAM2.addCompatibilityAlias("org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildAction", BadgeAction.class);
+        Run.XSTREAM2.addCompatibilityAlias("org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildSummaryAction", GroovyPostbuildSummaryActionMigrator.class);
     }
 }
