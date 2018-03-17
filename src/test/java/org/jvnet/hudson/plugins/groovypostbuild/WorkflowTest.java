@@ -32,6 +32,8 @@ import org.junit.Rule;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
+import com.jenkinsci.plugins.badge.action.BadgeAction;
+
 public class WorkflowTest {
 
     @Rule
@@ -43,7 +45,7 @@ public class WorkflowTest {
         WorkflowJob p = r.jenkins.createProject(WorkflowJob.class, "p");
         p.setDefinition(new CpsFlowDefinition("manager.addWarningBadge 'stuff is broken'", true));
         WorkflowRun b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        assertEquals("stuff is broken", b.getAction(GroovyPostbuildAction.class).getText());
+        assertEquals("stuff is broken", b.getAction(BadgeAction.class).getText());
     }
 
 }

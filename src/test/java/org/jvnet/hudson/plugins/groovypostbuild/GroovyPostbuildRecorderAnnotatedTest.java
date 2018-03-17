@@ -39,6 +39,8 @@ import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.WithPlugin;
 
+import com.jenkinsci.plugins.badge.action.BadgeAction;
+
 /**
  * Tests requires Jenkins launched for each test methods.
  */
@@ -70,6 +72,6 @@ public class GroovyPostbuildRecorderAnnotatedTest {
         
         FreeStyleBuild b = p.scheduleBuild2(0).get();
         j.assertBuildStatusSuccess(b);
-        assertEquals("dependee", b.getAction(GroovyPostbuildAction.class).getText());
+        assertEquals("dependee", b.getAction(BadgeAction.class).getText());
     }
 }
