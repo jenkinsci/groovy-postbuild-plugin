@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<build>
+  <actions>
+    <hudson.model.CauseAction>
+      <causes>
+        <hudson.model.Cause_-UserIdCause/>
+      </causes>
+    </hudson.model.CauseAction>
+    <org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildAction plugin="groovy-postbuild@2.3.1">
+      <iconPath>/plugin/groovy-postbuild/images/success.gif</iconPath>
+      <text>shortText</text>
+      <color>#000000</color>
+      <background>#FFFF00</background>
+      <border>1px</border>
+      <borderColor>#C0C000</borderColor>
+      <link>https://jenkins.io/</link>
+    </org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildAction>
+    <org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildSummaryAction plugin="groovy-postbuild@2.3.1">
+      <iconPath>info.gif</iconPath>
+      <textBuilder>&lt;b&gt;summaryText&lt;/b&gt;</textBuilder>
+    </org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildSummaryAction>
+  </actions>
+  <queueId>3</queueId>
+  <timestamp>1520037249871</timestamp>
+  <startTime>1520037249898</startTime>
+  <result>SUCCESS</result>
+  <duration>656</duration>
+  <charset>windows-31j</charset>
+  <keepLog>false</keepLog>
+  <builtOn></builtOn>
+  <workspace>C:\Users\ikedam\Desktop\workspace\groovy-postbuild-plugin\work\workspace\groovy-postbuild-2.3.1</workspace>
+  <hudsonVersion>1.625.3</hudsonVersion>
+  <scm class="hudson.scm.NullChangeLogParser"/>
+  <culprits class="com.google.common.collect.EmptyImmutableSortedSet"/>
+</build>
