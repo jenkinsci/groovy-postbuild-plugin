@@ -32,14 +32,14 @@ import com.jenkinsci.plugins.badge.action.BadgeSummaryAction;
  * @since 2.4
  */
 /*package*/ class GroovyPostbuildSummaryActionMigrator {
-    private transient String iconPath;
-    private transient StringBuilder textBuilder;
+	private transient String iconPath;
+	private transient StringBuilder textBuilder;
 
-    protected BadgeSummaryAction readResolve() {
-        BadgeSummaryAction action = new BadgeSummaryAction(iconPath);
-        if (textBuilder != null) {
-            action.appendText(textBuilder.toString(), false);
-        }
-        return action;
-    }
+	protected BadgeSummaryAction readResolve() {
+		BadgeSummaryAction action = new BadgeSummaryAction(iconPath);
+		if (textBuilder != null) {
+			action.appendText(textBuilder.toString(), false);
+		}
+		return action;
+	}
 }

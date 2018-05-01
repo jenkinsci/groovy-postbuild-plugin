@@ -36,16 +36,16 @@ import com.jenkinsci.plugins.badge.action.BadgeAction;
 
 public class WorkflowTest {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+	@Rule
+	public JenkinsRule r = new JenkinsRule();
 
-    @Issue("JENKINS-26918")
-    @Test
-    public void usingManager() throws Exception {
-        WorkflowJob p = r.jenkins.createProject(WorkflowJob.class, "p");
-        p.setDefinition(new CpsFlowDefinition("manager.addWarningBadge 'stuff is broken'", true));
-        WorkflowRun b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
-        assertEquals("stuff is broken", b.getAction(BadgeAction.class).getText());
-    }
+	@Issue("JENKINS-26918")
+	@Test
+	public void usingManager() throws Exception {
+		WorkflowJob p = r.jenkins.createProject(WorkflowJob.class, "p");
+		p.setDefinition(new CpsFlowDefinition("manager.addWarningBadge 'stuff is broken'", true));
+		WorkflowRun b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+		assertEquals("stuff is broken", b.getAction(BadgeAction.class).getText());
+	}
 
 }

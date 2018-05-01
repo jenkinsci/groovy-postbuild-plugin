@@ -28,5 +28,5 @@ import java.io.File;
 
 @Deprecated
 class GroovyScriptPath {
-    File path;
+	File path;
 }

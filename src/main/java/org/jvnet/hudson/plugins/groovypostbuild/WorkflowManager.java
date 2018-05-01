@@ -40,20 +40,20 @@ import org.jenkinsci.plugins.workflow.cps.GlobalVariable;
 @Extension(optional=true)
 public class WorkflowManager extends GlobalVariable {
 
-    @Override
-    public String getName() {
-        return "manager";
-    }
+	@Override
+	public String getName() {
+		return "manager";
+	}
 
-    @Override
-    public Object getValue(CpsScript script) throws Exception {
-        Run<?,?> build = script.$build();
-        if (build == null) {
-            throw new IllegalStateException("cannot find associated build");
-        }
-        // TODO currently no way to get access to WorkflowRun.listener
-        TaskListener listener = new LogTaskListener(Logger.getLogger(WorkflowManager.class.getName()), Level.WARNING);
-        return new GroovyPostbuildRecorder.BadgeManager(build, listener, Result.FAILURE);
-    }
+	@Override
+	public Object getValue(CpsScript script) throws Exception {
+		Run<?,?> build = script.$build();
+		if (build == null) {
+			throw new IllegalStateException("cannot find associated build");
+		}
+		// TODO currently no way to get access to WorkflowRun.listener
+		TaskListener listener = new LogTaskListener(Logger.getLogger(WorkflowManager.class.getName()), Level.WARNING);
+		return new GroovyPostbuildRecorder.BadgeManager(build, listener, Result.FAILURE);
+	}
 
 }

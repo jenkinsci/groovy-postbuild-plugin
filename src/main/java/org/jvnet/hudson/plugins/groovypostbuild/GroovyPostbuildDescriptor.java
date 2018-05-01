@@ -40,57 +40,57 @@ import hudson.tasks.Publisher;
 @Extension
 public class GroovyPostbuildDescriptor extends BuildStepDescriptor<Publisher> {
 
-    /**
-     * Constructs a {@link GroovyPostbuildDescriptor}.
-     */
-    public GroovyPostbuildDescriptor() {
-        super(GroovyPostbuildRecorder.class);
-    }
+	/**
+	 * Constructs a {@link GroovyPostbuildDescriptor}.
+	 */
+	public GroovyPostbuildDescriptor() {
+		super(GroovyPostbuildRecorder.class);
+	}
 
-    /**
-     * Gets the descriptor display name, used in the post step checkbox description.
-     * @return the descriptor display name
-     */
-    @Override
-    public final String getDisplayName() {
-        return "Groovy Postbuild";
-    }
-
-    @Override
-    public String getHelpFile() {
-        return super.getHelpFile();
-    }
-
-    /**
-     * Checks whether this descriptor is applicable.
-     * @param clazz
-     *            the class
-     * @return true
-     */
-    @SuppressWarnings("unchecked")
+	/**
+	 * Gets the descriptor display name, used in the post step checkbox description.
+	 * @return the descriptor display name
+	 */
 	@Override
-    public final boolean isApplicable(final Class<? extends AbstractProject> clazz) {
-        return true;
-    }
+	public final String getDisplayName() {
+		return "Groovy Postbuild";
+	}
 
-    /**
-     * Check whether the configuring model is {@link MatrixProject}. Called from jelly.
-     *
-     * Note: Caller should pass it for the model is not bound to
-     * {@link StaplerRequest#findAncestorObject(Class)}
-     * when called via hetelo-list.
-     *
-     * @param it
-     * @return true if the target model is {@link MatrixProject}
-     */
-    public boolean isMatrixProject(Object it) {
-        return (it != null) && (it instanceof MatrixProject);
-    }
+	@Override
+	public String getHelpFile() {
+		return super.getHelpFile();
+	}
 
-    @Initializer(before = InitMilestone.PLUGINS_STARTED)
-    public static void addAliases() {
-        // migration from groovy-postbuild 2.3.1- to badge-plugin
-        Run.XSTREAM2.addCompatibilityAlias("org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildAction", BadgeAction.class);
-        Run.XSTREAM2.addCompatibilityAlias("org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildSummaryAction", GroovyPostbuildSummaryActionMigrator.class);
-    }
+	/**
+	 * Checks whether this descriptor is applicable.
+	 * @param clazz
+	 *            the class
+	 * @return true
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public final boolean isApplicable(final Class<? extends AbstractProject> clazz) {
+		return true;
+	}
+
+	/**
+	 * Check whether the configuring model is {@link MatrixProject}. Called from jelly.
+	 *
+	 * Note: Caller should pass it for the model is not bound to
+	 * {@link StaplerRequest#findAncestorObject(Class)}
+	 * when called via hetelo-list.
+	 *
+	 * @param it
+	 * @return true if the target model is {@link MatrixProject}
+	 */
+	public boolean isMatrixProject(Object it) {
+		return (it != null) && (it instanceof MatrixProject);
+	}
+
+	@Initializer(before = InitMilestone.PLUGINS_STARTED)
+	public static void addAliases() {
+		// migration from groovy-postbuild 2.3.1- to badge-plugin
+		Run.XSTREAM2.addCompatibilityAlias("org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildAction", BadgeAction.class);
+		Run.XSTREAM2.addCompatibilityAlias("org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildSummaryAction", GroovyPostbuildSummaryActionMigrator.class);
+	}
 }

@@ -1,0 +1,18 @@
+# EditorConfig: http://EditorConfig.org
+
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+
+[*.java]
+max_line_length = off
+indent_style = tab
+indent_size = 4
+trim_trailing_whitespace = true
+
+[*.xml]
+indent_size = 2
+trim_trailing_whitespace = false
