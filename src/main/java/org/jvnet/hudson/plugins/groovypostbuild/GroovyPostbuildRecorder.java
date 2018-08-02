@@ -176,19 +176,19 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 
 		@Whitelisted
 		public void removeBadges() {
-			List<? extends Action> actions = build.getAllActions();
 			List<BadgeAction> badgeActions = build.getActions(BadgeAction.class);
-			actions.removeAll(badgeActions);
+			for (BadgeAction a : badgeActions) {
+				build.removeAction(a);
+			}
 		}
 		@Whitelisted
 		public void removeBadge(int index) {
-			List<? extends Action> actions = build.getAllActions();
 			List<BadgeAction> badgeActions = build.getActions(BadgeAction.class);
 			if(index < 0 || index >= badgeActions.size()) {
 				listener.error("Invalid badge index: " + index + ". Allowed values: 0 .. " + (badgeActions.size()-1));
 			} else {
 				BadgeAction action = badgeActions.get(index);
-				actions.remove(action);
+				build.removeAction(action);
 			}
 		}
 
