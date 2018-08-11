@@ -49,6 +49,8 @@ import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.UnstableBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import com.jenkinsci.plugins.badge.action.BadgeAction;
 import com.jenkinsci.plugins.badge.action.BadgeSummaryAction;
 
@@ -486,5 +488,59 @@ public class GroovyPostbuildRecorderTest {
             assertEquals("info.gif", badgeSummaryAction.getIconPath());
             assertEquals("<b>summaryText</b>", badgeSummaryAction.getText());
         }
+    }
+
+    @Test
+    public void testRemoveBadge() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getPublishersList().add(new GroovyPostbuildRecorder(
+                new SecureGroovyScript(
+                    "manager.addShortText('test1');\n"
+                        + "manager.addShortText('test2');\n"
+                        + "manager.removeBadge(0);",
+                    true,       // sandbox
+                    Collections.<ClasspathEntry>emptyList()
+                ),
+                2,   // behavior
+                false       // runForMatrixParent
+        ));
+
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals(
+            Arrays.asList("test2"),
+            Lists.transform(
+                b.getActions(BadgeAction.class),
+                new Function<BadgeAction, String>() {
+                    @Override
+                    public String apply(BadgeAction badge) {
+                        return badge.getText();
+                    }
+                }
+            )
+        );
+    }
+
+    @Test
+    public void testRemoveBadges() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getPublishersList().add(new GroovyPostbuildRecorder(
+                new SecureGroovyScript(
+                    "manager.addShortText('test1');\n"
+                        + "manager.addShortText('test2');\n"
+                        + "manager.removeBadges();",
+                    true,       // sandbox
+                    Collections.<ClasspathEntry>emptyList()
+                ),
+                2,   // behavior
+                false       // runForMatrixParent
+        ));
+
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals(
+            Collections.emptyList(),
+            b.getActions(BadgeAction.class)
+        );
     }
 }
