@@ -198,18 +198,18 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 			return action;
 		}
 		public void removeSummaries() {
-			List<? extends Action> actions = build.getAllActions();
 			List<BadgeSummaryAction> summaryActions = build.getActions(BadgeSummaryAction.class);
-			actions.removeAll(summaryActions);
+			for (BadgeSummaryAction a : summaryActions) {
+				build.removeAction(a);
+			}
 		}
 		public void removeSummary(int index) {
-			List<? extends Action> actions = build.getAllActions();
 			List<BadgeSummaryAction> summaryActions = build.getActions(BadgeSummaryAction.class);
 			if(index < 0 || index >= summaryActions.size()) {
 				listener.error("Invalid summary index: " + index + ". Allowed values: 0 .. " + (summaryActions.size()-1));
 			} else {
 				BadgeSummaryAction action = summaryActions.get(index);
-				actions.remove(action);
+				build.removeAction(action);
 			}
 		}
 
