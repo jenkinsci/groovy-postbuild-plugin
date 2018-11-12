@@ -42,6 +42,7 @@ import hudson.model.Result;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ClasspathEntry;
+import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -541,6 +542,60 @@ public class GroovyPostbuildRecorderTest {
         assertEquals(
             Collections.emptyList(),
             b.getActions(BadgeAction.class)
+        );
+    }
+
+    @Test
+    public void testRemoveSummary() throws Exception {
+        String template = "method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder$BadgeManager %s";
+        ScriptApproval.get().approveSignature(String.format(template, "removeSummary int"));
+        ScriptApproval.get().approveSignature(String.format(template, "createSummary java.lang.String"));
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getPublishersList().add(new GroovyPostbuildRecorder(
+                new SecureGroovyScript(
+                        "manager.createSummary('attribute.png').appendText('Test1', false, false, false, 'Black');\n"
+                                + "manager.createSummary('attribute.png').appendText('Test2', false, false, false, 'Black');\n"
+                                + "manager.removeSummary(0);",
+                        true,
+                        Collections.<ClasspathEntry>emptyList()
+                ),
+                2,   // behavior
+                false       // runForMatrixParent
+        ));
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals(
+                Arrays.asList("<font color=\"Black\">Test2</font>"),
+                Lists.transform(
+                        b.getActions(BadgeSummaryAction.class),
+                        new Function<BadgeSummaryAction, String>() {
+                            @Override
+                            public String apply(BadgeSummaryAction action) {
+                                return action.getText();
+                            }
+                        }
+                )
+        );
+    }
+    @Test
+    public void testRemoveSummaries() throws Exception {
+        String template = "method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder$BadgeManager %s";
+        ScriptApproval.get().approveSignature(String.format(template, "removeSummaries"));
+        ScriptApproval.get().approveSignature(String.format(template, "createSummary java.lang.String"));
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getPublishersList().add(new GroovyPostbuildRecorder(
+                new SecureGroovyScript(
+                        "manager.createSummary('attribute.png').appendText('Test1', false, false, false, 'Black');\n"
+                                + "manager.removeSummaries();",
+                        true,
+                        Collections.<ClasspathEntry>emptyList()
+                ),
+                2,   // behavior
+                false       // runForMatrixParent
+        ));
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals(
+                Collections.emptyList(),
+                b.getActions(BadgeSummaryAction.class)
         );
     }
 }
