@@ -26,6 +26,7 @@ package org.jvnet.hudson.plugins.groovypostbuild;
 import groovy.lang.Binding;
 import hudson.AbortException;
 import hudson.EnvVars;
+import hudson.Functions;
 import hudson.Launcher;
 import hudson.matrix.MatrixAggregatable;
 import hudson.matrix.MatrixAggregator;
@@ -254,7 +255,7 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 
         @Whitelisted
 	    public boolean logContains(String regexp) {
-	    	return contains(build.getLogFile(), build.getCharset(), regexp);
+            return getLogMatcher(regexp) != null;
 	    }
 
 
@@ -263,6 +264,7 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
             return contains(f, Charset.defaultCharset(), regexp);
         }
 
+        @Deprecated
         // not @Whitelisted unless we know what file that is
 	    public boolean contains(File f, Charset charset, String regexp) {
 	    	Matcher matcher = getMatcher(f, charset, regexp);
@@ -271,7 +273,13 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 
         @Whitelisted
 	    public Matcher getLogMatcher(String regexp) {
-	    	return getMatcher(build.getLogFile(), build.getCharset(), regexp);
+            try (Reader r = build.getLogReader()) {
+                return getMatcher(r, regexp);
+            } catch (IOException e) {
+                Functions.printStackTrace(e, listener.error("Groovy Postbuild: logContains(\"" + regexp + "\") failed."));
+				buildScriptFailed(e);
+                return null;
+            }
 	    }
 
         @Deprecated
@@ -279,10 +287,9 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
             return getMatcher(f, Charset.defaultCharset(), regexp);
         }
 
-	    public Matcher getMatcher(File f, Charset charset, String regexp) {
-	    	LOGGER.fine("Searching for '" + regexp + "' in '" + f + "'.");
+	    public Matcher getMatcher(Reader r, String regexp) {
 			Matcher matcher = null;
-			try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(f), charset))) {
+			try (BufferedReader reader = new BufferedReader(r)) {
 		    	Pattern pattern = compilePattern(regexp);
 				// Assume default encoding and text files
 				String line;
@@ -294,10 +301,23 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 					}
 				}
 			} catch (IOException e) {
-				e.printStackTrace(listener.error("Groovy Postbuild: getMatcher(\"" + f + "\", \"" + regexp + "\") failed."));
+                Functions.printStackTrace(e, listener.error("Groovy Postbuild: getMatcher(…, \"" + regexp + "\") failed."));
 				buildScriptFailed(e);
 			}
 			return matcher;
+
+        }
+
+        @Deprecated
+	    public Matcher getMatcher(File f, Charset charset, String regexp) {
+	    	LOGGER.fine("Searching for '" + regexp + "' in '" + f + "'.");
+            try (InputStream is = new FileInputStream(f); Reader r = new InputStreamReader(is, charset)) {
+                return getMatcher(r, regexp);
+			} catch (IOException e) {
+				Functions.printStackTrace(e, listener.error("Groovy Postbuild: getMatcher(\"" + f + "\", \"" + regexp + "\") failed."));
+				buildScriptFailed(e);
+			}
+			return null;
 		}
 
 	    private Pattern compilePattern(String regexp) throws AbortException {
