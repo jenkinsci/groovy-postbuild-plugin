@@ -361,7 +361,6 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 
 	@Override
 	public final boolean perform(final AbstractBuild<?, ?> build, final Launcher launcher, final BuildListener listener) throws InterruptedException, IOException {
-        Hudson.getInstance().checkPermission(Hudson.ADMINISTER);
 		boolean scriptResult = true;
 		LOGGER.fine("perform() called for script");
 		LOGGER.fine("behavior: " + behavior);
