@@ -28,17 +28,24 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import hudson.matrix.AxisList;
 import hudson.matrix.Combination;
 import hudson.matrix.MatrixBuild;
 import hudson.matrix.MatrixProject;
 import hudson.matrix.TextAxis;
+import hudson.model.Computer;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
+import hudson.model.Item;
 import hudson.model.Result;
+import hudson.model.User;
+import jenkins.security.QueueItemAuthenticatorConfiguration;
 
+import org.acegisecurity.Authentication;
 import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ClasspathEntry;
@@ -46,7 +53,10 @@ import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockAuthorizationStrategy;
+import org.jvnet.hudson.test.MockQueueItemAuthenticator;
 import org.jvnet.hudson.test.FailureBuilder;
+import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.UnstableBuilder;
 import org.jvnet.hudson.test.recipes.LocalData;
 
@@ -597,5 +607,35 @@ public class GroovyPostbuildRecorderTest {
                 Collections.emptyList(),
                 b.getActions(BadgeSummaryAction.class)
         );
+    }
+
+    @Test
+    @Issue("JENKINS-54262")
+    public void testRunWithNonAdministrator() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getPublishersList().add(new GroovyPostbuildRecorder(
+                new SecureGroovyScript(
+                        "manager.addShortText('test1');",
+                        true,       // sandbox
+                        Collections.<ClasspathEntry>emptyList()
+                ),
+                2,   // behavior
+                false       // runForMatrixParent
+        ));
+
+        j.jenkins.setSecurityRealm(j.createDummySecurityRealm());
+        MockAuthorizationStrategy authStrategy = new MockAuthorizationStrategy();
+        j.jenkins.setAuthorizationStrategy(authStrategy);
+        authStrategy.grant(Item.BUILD).onRoot().to("alice");
+        authStrategy.grant(Computer.BUILD).onRoot().to("alice");
+
+        Map<String, Authentication> authMap = new HashMap<>();
+        authMap.put(p.getFullName(), User.getById("alice", true).impersonate());
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().clear();
+        QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(
+            new MockQueueItemAuthenticator(authMap)
+        );
+
+        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
     }
 }
