@@ -56,8 +56,10 @@ import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ApprovalContext;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ClasspathEntry;
 
+import com.jenkinsci.plugins.badge.action.AbstractBadgeAction;
 import com.jenkinsci.plugins.badge.action.BadgeAction;
 import com.jenkinsci.plugins.badge.action.BadgeSummaryAction;
+import com.jenkinsci.plugins.badge.action.HtmlBadgeAction;
 
 /** This class associates {@link BadgeAction}s to a build. */
 @SuppressWarnings("unchecked")
@@ -170,6 +172,11 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 		}
 
         @Whitelisted
+        public void addHtmlBadge(String html) {
+            build.addAction(HtmlBadgeAction.createHtmlBadge(html));
+        }
+
+        @Whitelisted
         public String getResult() {
             Result r = build.getResult();
             return (r != null) ? r.toString() : null;
@@ -177,18 +184,18 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 
 		@Whitelisted
 		public void removeBadges() {
-			List<BadgeAction> badgeActions = build.getActions(BadgeAction.class);
-			for (BadgeAction a : badgeActions) {
+			List<AbstractBadgeAction> badgeActions = build.getActions(AbstractBadgeAction.class);
+			for (AbstractBadgeAction a : badgeActions) {
 				build.removeAction(a);
 			}
 		}
 		@Whitelisted
 		public void removeBadge(int index) {
-			List<BadgeAction> badgeActions = build.getActions(BadgeAction.class);
+			List<AbstractBadgeAction> badgeActions = build.getActions(AbstractBadgeAction.class);
 			if(index < 0 || index >= badgeActions.size()) {
 				listener.error("Invalid badge index: " + index + ". Allowed values: 0 .. " + (badgeActions.size()-1));
 			} else {
-				BadgeAction action = badgeActions.get(index);
+				AbstractBadgeAction action = badgeActions.get(index);
 				build.removeAction(action);
 			}
 		}

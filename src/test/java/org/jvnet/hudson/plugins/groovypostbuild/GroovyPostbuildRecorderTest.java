@@ -47,6 +47,7 @@ import jenkins.security.QueueItemAuthenticatorConfiguration;
 
 import org.acegisecurity.Authentication;
 import org.apache.commons.lang.StringUtils;
+import org.hamcrest.Matchers;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ClasspathEntry;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
@@ -502,6 +503,95 @@ public class GroovyPostbuildRecorderTest {
     }
 
     @Test
+    public void testAddShortText() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getPublishersList().add(new GroovyPostbuildRecorder(
+            new SecureGroovyScript(
+                "manager.addShortText('some-badge-text');",
+                true,       // sandbox
+                Collections.<ClasspathEntry>emptyList()
+            ),
+            2,   // behavior
+            false       // runForMatrixParent
+        ));
+
+        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+
+        assertThat(
+            j.createWebClient().getPage(p).asText(),
+            Matchers.containsString("some-badge-text")
+        );
+    }
+
+    @Test
+    public void testAddShortTextHtmlIsEscaped() throws Exception {
+        // This test is to make it clear that
+        // addShortText() doesn't allow HTMLs
+        // even though that implementation is 
+        // in badge-plugin.
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getPublishersList().add(new GroovyPostbuildRecorder(
+            new SecureGroovyScript(
+                "manager.addShortText('<div id=\"should-be-escaped\">foobar</div>');",
+                true,       // sandbox
+                Collections.<ClasspathEntry>emptyList()
+            ),
+            2,   // behavior
+            false       // runForMatrixParent
+        ));
+
+        assertNull(j.createWebClient().getPage(p).getElementById("should-be-escaped"));
+    }
+
+    @Test
+    public void testAddHtmlBadge() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getPublishersList().add(new GroovyPostbuildRecorder(
+            new SecureGroovyScript(
+                "manager.addHtmlBadge('<div id=\"added-as-badge\">foobar</div>');",
+                true,       // sandbox
+                Collections.<ClasspathEntry>emptyList()
+            ),
+            2,   // behavior
+            false       // runForMatrixParent
+        ));
+
+        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+
+        assertEquals(
+            "foobar",
+            j.createWebClient().getPage(p).getElementById("added-as-badge").getTextContent()
+        );
+    }
+
+
+    @Test
+    public void testAddHtmlBadgeForUnsafeHtml() throws Exception {
+        // This test is to make it sure that
+        // addHtmlBadge() doesn't allow danger HTMLs
+        // even though that implementation is 
+        // in badge-plugin.
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getPublishersList().add(new GroovyPostbuildRecorder(
+            new SecureGroovyScript(
+                "manager.addHtmlBadge('<script id=\"should-be-untainted\">alert(\"exploit!\");</script>');",
+                true,       // sandbox
+                Collections.<ClasspathEntry>emptyList()
+            ),
+            2,   // behavior
+            false       // runForMatrixParent
+        ));
+
+        j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+
+        assertNull(j.createWebClient().getPage(p).getElementById("should-be-untainted"));
+    }
+
+    @Test
     public void testRemoveBadge() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 
@@ -552,6 +642,38 @@ public class GroovyPostbuildRecorderTest {
         assertEquals(
             Collections.emptyList(),
             b.getActions(BadgeAction.class)
+        );
+    }
+
+    @Test
+    public void testRemoveBadgeForHtmlBadge() throws Exception {
+        // removeBadge() also removes HtmlBadges
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getPublishersList().add(new GroovyPostbuildRecorder(
+            new SecureGroovyScript(
+                "manager.addHtmlBadge('test1');\n"
+                    + "manager.addShortText('test2');\n"
+                    + "manager.removeBadge(0);",
+                true,       // sandbox
+                Collections.<ClasspathEntry>emptyList()
+            ),
+            2,   // behavior
+            false       // runForMatrixParent
+        ));
+
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals(
+            Arrays.asList("test2"),
+            Lists.transform(
+                b.getActions(BadgeAction.class),
+                new Function<BadgeAction, String>() {
+                    @Override
+                    public String apply(BadgeAction badge) {
+                        return badge.getText();
+                    }
+                }
+            )
         );
     }
 
