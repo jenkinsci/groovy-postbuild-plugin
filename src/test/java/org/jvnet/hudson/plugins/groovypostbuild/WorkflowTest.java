@@ -33,11 +33,17 @@ import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
 
 import com.jenkinsci.plugins.badge.action.BadgeAction;
+import java.util.Collections;
+import java.util.logging.Level;
+import org.jvnet.hudson.test.LoggerRule;
 
 public class WorkflowTest {
 
     @Rule
     public JenkinsRule r = new JenkinsRule();
+
+    @Rule
+    public LoggerRule logging = new LoggerRule();
 
     @Issue("JENKINS-26918")
     @Test
@@ -46,6 +52,20 @@ public class WorkflowTest {
         p.setDefinition(new CpsFlowDefinition("manager.addWarningBadge 'stuff is broken'", true));
         WorkflowRun b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
         assertEquals("stuff is broken", b.getAction(BadgeAction.class).getText());
+    }
+
+    @Issue("JENKINS-54128")
+    @Test
+    public void logContains() throws Exception {
+        WorkflowJob p = r.jenkins.createProject(WorkflowJob.class, "p");
+        p.setDefinition(new CpsFlowDefinition(
+            "echo '1st message'\n" +
+            "echo '2nd message'\n" +
+            "sleep 1\n" + // to flush output (inspecting Run.log from the build itself is unreliable; use a TaskListenerDecorator instead)
+            "echo(/found first message? ${manager.logContains(/1st message/)} second? ${manager.logContains(/2nd message/)} third? ${manager.logContains(/3rd message/)} /); ", true));
+        logging.record(WorkflowRun.class, Level.WARNING).capture(100);
+        r.assertLogContains("found first message? true second? true third? false", r.assertBuildStatusSuccess(p.scheduleBuild2(0)));
+        assertEquals(Collections.emptyList(), logging.getRecords());
     }
 
 }
