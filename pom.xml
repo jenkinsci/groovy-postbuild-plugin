@@ -36,9 +36,6 @@
   <properties>
     <jenkins.version>2.121.1</jenkins.version>
     <java.level>8</java.level>
-    <badge-plugin.version>1.5</badge-plugin.version>
-    <workflow-step-api-plugin.version>2.20</workflow-step-api-plugin.version>
-    <workflow-cps-plugin.version>2.69</workflow-cps-plugin.version>
   </properties>
 
   <scm>
@@ -65,7 +62,7 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>badge</artifactId>
-            <version>${badge-plugin.version}</version>
+            <version>1.5</version>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
@@ -73,17 +70,15 @@
             <version>1.12</version>
         </dependency>
         <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-cps</artifactId>
-            <version>${workflow-cps-plugin.version}</version>
-            <optional>true</optional>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>script-security</artifactId>
+            <version>1.42</version>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-step-api</artifactId>
-            <version>${workflow-step-api-plugin.version}</version>
-            <classifier>tests</classifier>
-            <scope>test</scope>
+            <artifactId>workflow-cps</artifactId>
+            <version>2.54</version>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
@@ -94,32 +89,27 @@
         <dependency>
             <groupId>org.jenkins-ci.plugins.workflow</groupId>
             <artifactId>workflow-basic-steps</artifactId>
-            <version>2.15</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jenkins-ci.plugins</groupId>
-            <artifactId>junit</artifactId>
-            <version>1.20</version>
+            <version>2.4</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
     <dependencyManagement>
+        <!-- To resolve RequireUpperBoundDeps errors -->
         <dependencies>
             <dependency>
                 <groupId>org.jenkins-ci.plugins.workflow</groupId>
                 <artifactId>workflow-step-api</artifactId>
-                <version>${workflow-step-api-plugin.version}</version>
+                <version>2.19</version>
             </dependency>
             <dependency>
                 <groupId>org.jenkins-ci.plugins.workflow</groupId>
                 <artifactId>workflow-api</artifactId>
-                <version>2.33</version>
+                <version>2.32</version>
             </dependency>
             <dependency>
                 <groupId>org.jenkins-ci.plugins.workflow</groupId>
                 <artifactId>workflow-support</artifactId>
-                <version>3.3</version>
+                <version>3.2</version>
             </dependency>
             <dependency>
                 <groupId>org.jenkins-ci.plugins</groupId>
@@ -129,12 +119,7 @@
             <dependency>
                 <groupId>org.jenkins-ci.plugins</groupId>
                 <artifactId>structs</artifactId>
-                <version>1.19</version>
-            </dependency>
-            <dependency>
-                <groupId>org.jenkins-ci.plugins</groupId>
-                <artifactId>script-security</artifactId>
-                <version>1.60</version>
+                <version>1.17</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
