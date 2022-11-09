@@ -39,8 +39,8 @@
   </properties>
 
   <scm>
-    <connection>scm:git:git://github.com/jenkinsci/groovy-postbuild-plugin.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/jenkinsci/groovy-postbuild-plugin.git</developerConnection>
+    <connection>scm:git:https://github.com/jenkinsci/groovy-postbuild-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:jenkinsci/groovy-postbuild-plugin.git</developerConnection>
     <url>https://github.com/jenkinsci/groovy-postbuild-plugin</url>
     <tag>HEAD</tag>
   </scm>
