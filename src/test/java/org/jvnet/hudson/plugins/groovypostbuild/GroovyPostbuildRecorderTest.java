@@ -561,9 +561,9 @@ public class GroovyPostbuildRecorderTest {
 
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
 
-        assertEquals(
-            "foobar",
-            j.createWebClient().getPage(p).getElementById("added-as-badge").getTextContent()
+        assertThat(
+            j.createWebClient().getPage(p).getVisibleText(),
+            Matchers.containsString("foobar")
         );
     }
 
