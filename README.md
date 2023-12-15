@@ -30,12 +30,12 @@ You can always use *approved methods*, but you can use *non-approved methods* on
     offered by Jenkins, groovy-postbuild provides the following icons
     (watch out for duplicates, see Example 5):
 
-    > ![](docs/images/completed.gif) -
-    > completed.gif
-    > ![](docs/images/db_in.gif) -
-    > db\_in.gif
-    > ![](docs/images/db_out.gif) -
-    > db\_out.gif
+    > ![](docs/images/completed.gif) - completed.gif
+    >
+    > ![](docs/images/db_in.gif) - db\_in.gif
+    >
+    > ![](docs/images/db_out.gif) - db\_out.gif
+    >
     > ![](docs/images/delete.gif) -
     > delete.gif
     > ![](docs/images/error.gif) -
@@ -84,12 +84,9 @@ You can always use *approved methods*, but you can use *non-approved methods* on
 Methods returning non-primitive objects aren't approved.
 The groovy postbuild plugin doesn't ensure that the methods of the returned object are safe.
 
--   hudson - the current Hudson instance (see
-    [hudson.model.Hudson](http://javadoc.jenkins-ci.org/index.html?hudson/model/Hudson.html)).
--   build - the current build (see
-    [hudson.model.AbstractBuild](http://javadoc.jenkins-ci.org/index.html?hudson/model/AbstractBuild.html)).
--   listener - the build listener (see
-    [hudson.model.BuildListener](http://javadoc.jenkins-ci.org/index.html?hudson/model/BuildListener.html)).
+-   build - the current build - [javadoc](https://javadoc.jenkins-ci.org/hudson/model/AbstractBuild.html)
+-   hudson - the current controller instance - [javadoc](https://javadoc.jenkins-ci.org/hudson/model/Hudson.html)
+-   listener - the build listener - [javadoc](https://javadoc.jenkins-ci.org/hudson/model/BuildListener.html)
 
 &nbsp;
 
