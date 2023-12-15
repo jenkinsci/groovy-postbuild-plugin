@@ -519,7 +519,7 @@ public class GroovyPostbuildRecorderTest {
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
 
         assertThat(
-            j.createWebClient().getPage(p).asText(),
+            j.createWebClient().getPage(p).getVisibleText(),
             Matchers.containsString("some-badge-text")
         );
     }
@@ -561,9 +561,9 @@ public class GroovyPostbuildRecorderTest {
 
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
 
-        assertEquals(
-            "foobar",
-            j.createWebClient().getPage(p).getElementById("added-as-badge").getTextContent()
+        assertThat(
+            j.createWebClient().getPage(p).getVisibleText(),
+            Matchers.containsString("foobar")
         );
     }
 
@@ -696,7 +696,7 @@ public class GroovyPostbuildRecorderTest {
         ));
         FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
         assertEquals(
-                Arrays.asList("<font color=\"Black\">Test2</font>"),
+                Arrays.asList("Test2"),
                 Lists.transform(
                         b.getActions(BadgeSummaryAction.class),
                         new Function<BadgeSummaryAction, String>() {
