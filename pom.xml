@@ -9,7 +9,7 @@
   </parent>
   <groupId>org.jvnet.hudson.plugins</groupId>
   <artifactId>groovy-postbuild</artifactId>
-  <version>${revision}${changelist}</version>
+  <version>${changelist}</version>
   <packaging>hpi</packaging>
 
   <name>Groovy Postbuild</name>
@@ -42,8 +42,7 @@
   </scm>
 
   <properties>
-    <revision>2.6</revision>
-    <changelist>-SNAPSHOT</changelist>
+    <changelist>999999-SNAPSHOT</changelist>
     <gitHubRepo>jenkinsci/groovy-postbuild-plugin</gitHubRepo>
     <jenkins.version>2.361.4</jenkins.version>
     <spotless.check.skip>false</spotless.check.skip>

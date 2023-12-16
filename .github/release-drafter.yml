@@ -1,2 +1,0 @@
-_extends: .github
-tag-template: groovy-postbuild-$NEXT_MINOR_VERSION
