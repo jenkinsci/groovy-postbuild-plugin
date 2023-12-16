@@ -344,28 +344,24 @@ It can be performed by running a following command:
 
 You can use /path/to/mylib.jar as an additonal classpath for scripts.
 
-[ REST interfaces not verified - docs are commented ]: #
-[
-### REST interfaces
-
-It is also possible to delete badges and summaries by using the following links:
-
--   remove all badges:
-    -   `http``://``your-jenkins``/job/``your-job``/``build-number``/parent/parent/plugin/groovy-postbuild/removeBadges`
-
-&nbsp;
-
--   remove all summaries:
-    -   `http``://``your-jenkins``/job/``your-job``/``build-number``/parent/parent/plugin/groovy-postbuild/removeSummaries`
-
-&nbsp;
-
--   remove the badge with the given index:
-    -   `http``://``your-jenkins``/job/``your-job``/``build-number``/parent/parent/plugin/groovy-postbuild/removeBadge?index=``idx`
-
-&nbsp;
-
--   remove the summary with the given index:
-    -   `http``://``your-jenkins``/job/``your-job``/``build-number``/parent/parent/plugin/groovy-postbuild/removeSummary?index=``idx`
-
-]: #
+# ### REST interfaces
+#
+# It is also possible to delete badges and summaries by using the following links:
+#
+# -   remove all badges:
+#     -   `http``://``your-jenkins``/job/``your-job``/``build-number``/parent/parent/plugin/groovy-postbuild/removeBadges`
+#
+# &nbsp;
+#
+# -   remove all summaries:
+#     -   `http``://``your-jenkins``/job/``your-job``/``build-number``/parent/parent/plugin/groovy-postbuild/removeSummaries`
+#
+# &nbsp;
+#
+# -   remove the badge with the given index:
+#     -   `http``://``your-jenkins``/job/``your-job``/``build-number``/parent/parent/plugin/groovy-postbuild/removeBadge?index=``idx`
+#
+# &nbsp;
+#
+# -   remove the summary with the given index:
+#     -   `http``://``your-jenkins``/job/``your-job``/``build-number``/parent/parent/plugin/groovy-postbuild/removeSummary?index=``idx`
