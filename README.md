@@ -14,16 +14,26 @@ You can always use *approved methods*, but you can use *non-approved methods* on
 -   `getEnvVariable(key)` - get a variable value.
 -   `getResult()` - get a build result string (like SUCCESS, FAILURE)
 
-&nbsp;
+#### Log methods
 
 -   `logContains(regexp)` - returns true if the build log file contains a line matching *regexp*.
 -   `getLogMatcher(regexp)` - returns a [java.util.regex.Matcher](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/regex/Matcher.html) for the first occurrence of *regexp* in the build log file.
 
-&nbsp;
+#### Short text methods
 
 -   `addShortText(text)` - puts a badge with a short text, using the default format.
 -   `addShortText(text, color, background, border, borderColor)` - puts a badge with a short text, using the specified format.
     Supports html color names.
+
+#### Badge methods
+
+-   `addBadge(icon, text, link)` - like addBadge(icon, text), but the Badge icon then actually links to the given link
+-   `addInfoBadge(text)` - puts a badge with ![](docs/images/info.gif) info icon and the given text.
+-   `addWarningBadge(text)` - puts a badge with ![](docs/images/warning.gif) warning icon and the given text.
+-   `addErrorBadge(text)` - puts a badge with ![](docs/images/error.gif) error icon and the given text.
+-   `addHtmlBadge(html)` - puts a badge with html source. Unsafe html codes will be removed.
+-   `removeBadges()` - removes all badges from the current build. It is often used with `setBuildNumber`.
+-   `removeBadge(index)` - removes the badge with the given index. It is often used with `setBuildNumber`.
 -   `addBadge(icon, text)` - puts a badge with the given icon and text.
     Provides the following icons:
 
@@ -55,23 +65,13 @@ You can always use *approved methods*, but you can use *non-approved methods* on
     >
     > ![](docs/images/yellow.gif) - yellow.gif
 
-&nbsp;
-
--   `addBadge(icon, text, link)` - like addBadge(icon, text), but the Badge icon then actually links to the given link
--   `addInfoBadge(text)` - puts a badge with ![](docs/images/info.gif) info icon and the given text.
--   `addWarningBadge(text)` - puts a badge with ![](docs/images/warning.gif) warning icon and the given text.
--   `addErrorBadge(text)` - puts a badge with ![](docs/images/error.gif) error icon and the given text.
--   `addHtmlBadge(html)` - puts a badge with html source. Unsafe html codes will be removed.
--   `removeBadges()` - removes all badges from the current build. It is often used with `setBuildNumber`.
--   `removeBadge(index)` - removes the badge with the given index. It is often used with `setBuildNumber`.
-
-&nbsp;
+#### Build result methods
 
 -   `buildUnstable()` - sets the build result to *UNSTABLE*.
 -   `buildFailure()` - sets the build result to *FAILURE*.
 -   `buildSuccess()` - sets the build result to *SUCCESS*.
 
-&nbsp;
+#### Job type methods
 
 -   `buildIsA(klass)` - test the build is a specified class
 
