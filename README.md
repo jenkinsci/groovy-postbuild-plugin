@@ -11,24 +11,21 @@ You can always use *approved methods*, but you can use *non-approved methods* on
 
 ### Approved methods
 
--   getEnvVariable(key) - get a variable value. (since 1.10)
--   getResult() - get a build result string (like SUCCESS, FAILURE) (since 2.2)
+-   `getEnvVariable(key)` - get a variable value. (since 1.10)
+-   `getResult()` - get a build result string (like SUCCESS, FAILURE) (since 2.2)
 
 &nbsp;
 
--   logContains(regexp) - returns true if the build log file contains a line matching *regexp*.
--   getLogMatcher(regexp) - returns a [java.util.regex.Matcher](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/regex/Matcher.html) for the first occurrence of *regexp* in the build log file.
+-   `logContains(regexp)` - returns true if the build log file contains a line matching *regexp*.
+-   `getLogMatcher(regexp)` - returns a [java.util.regex.Matcher](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/regex/Matcher.html) for the first occurrence of *regexp* in the build log file.
 
 &nbsp;
 
--   addShortText(text) - puts a badge with a short text, using the default format.
--   addShortText(text, color, background, border, borderColor) - puts a
-    badge with a short text, using the specified format.  For Colors
-    supported, Google "html color names".
--   addBadge(icon, text) - puts a badge with the given icon and text. In
-    addition to the [16x16 icons](https://github.com/jenkinsci/jenkins/tree/master/war/src/main/webapp/images/16x16)
-    offered by Jenkins, groovy-postbuild provides the following icons
-    (watch out for duplicates, see Example 5):
+-   `addShortText(text)` - puts a badge with a short text, using the default format.
+-   `addShortText(text, color, background, border, borderColor)` - puts a badge with a short text, using the specified format.
+    Supports html color names.
+-   `addBadge(icon, text)` - puts a badge with the given icon and text.
+    Provides the following icons:
 
     > ![](docs/images/completed.gif) - completed.gif
     >
@@ -36,61 +33,60 @@ You can always use *approved methods*, but you can use *non-approved methods* on
     >
     > ![](docs/images/db_out.gif) - db\_out.gif
     >
-    > ![](docs/images/delete.gif) -
-    > delete.gif
-    > ![](docs/images/error.gif) -
-    > error.gif
-    > ![](docs/images/folder.gif) -
-    > folder.gif
-    > ![](docs/images/green.gif) -
-    > green.gif
-    > ![](docs/images/info.gif) -
-    > info.gif
-    > ![](docs/images/red.gif) -
-    > red.gif
-    > ![](docs/images/save.gif) -
-    > save.gif
-    > ![](docs/images/success.gif) -
-    > success.gif
-    > ![](docs/images/text.gif) -
-    > text.gif
-    > ![](docs/images/warning.gif) -
-    > warning.gif
-    > ![](docs/images/yellow.gif) -
-    > yellow.gif
+    > ![](docs/images/delete.gif) - delete.gif
+    >
+    > ![](docs/images/error.gif) -  error.gif
+    >
+    > ![](docs/images/folder.gif) - folder.gif
+    >
+    > ![](docs/images/green.gif) - green.gif
+    >
+    > ![](docs/images/info.gif) - info.gif
+    >
+    > ![](docs/images/red.gif) - red.gif
+    >
+    > ![](docs/images/save.gif) - save.gif
+    >
+    > ![](docs/images/success.gif) - success.gif
+    >
+    > ![](docs/images/text.gif) - text.gif
+    >
+    > ![](docs/images/warning.gif) - warning.gif
+    >
+    > ![](docs/images/yellow.gif) - yellow.gif
 
 &nbsp;
 
--   addBadge(icon, text, link) - like addBadge(icon, text), but the Badge icon then actually links to the given link (since 1.8)
--   addInfoBadge(text) - puts a badge with ![](docs/images/info.gif) info icon and the given text.
--   addWarningBadge(text) - puts a badge with ![](docs/images/warning.gif) warning icon and the given text.
--   addErrorBadge(text) - puts a badge with ![](docs/images/error.gif) error icon and the given text.
--   addHtmlBadge(html) - puts a badge with html source (since 2.5). Unsafe html codes will be removed.
--   removeBadges() - removes all badges from the current build. It is often used with `setBuildNumber`.
--   removeBadge(index) - removes the badge with the given index. It is often used with `setBuildNumber`.
+-   `addBadge(icon, text, link)` - like addBadge(icon, text), but the Badge icon then actually links to the given link (since 1.8)
+-   `addInfoBadge(text)` - puts a badge with ![](docs/images/info.gif) info icon and the given text.
+-   `addWarningBadge(text)` - puts a badge with ![](docs/images/warning.gif) warning icon and the given text.
+-   `addErrorBadge(text)` - puts a badge with ![](docs/images/error.gif) error icon and the given text.
+-   `addHtmlBadge(html)` - puts a badge with html source (since 2.5). Unsafe html codes will be removed.
+-   `removeBadges()` - removes all badges from the current build. It is often used with `setBuildNumber`.
+-   `removeBadge(index)` - removes the badge with the given index. It is often used with `setBuildNumber`.
 
 &nbsp;
 
--   buildUnstable() - sets the build result to *UNSTABLE*.
--   buildFailure() - sets the build result to *FAILURE*.
--   buildSuccess() - sets the build result to *SUCCESS*.
+-   `buildUnstable()` - sets the build result to *UNSTABLE*.
+-   `buildFailure()` - sets the build result to *FAILURE*.
+-   `buildSuccess()` - sets the build result to *SUCCESS*.
 
 &nbsp;
 
--   buildIsA(klass) - test the build is a specified class (since 2.0)
+-   `buildIsA(klass)` - test the build is a specified class (since 2.0)
 
 ### Non-approved methods
 
 Methods returning non-primitive objects aren't approved.
 The groovy postbuild plugin doesn't ensure that the methods of the returned object are safe.
 
--   build - the current build - [javadoc](https://javadoc.jenkins-ci.org/hudson/model/AbstractBuild.html)
--   hudson - the current controller instance - [javadoc](https://javadoc.jenkins-ci.org/hudson/model/Hudson.html)
--   listener - the build listener - [javadoc](https://javadoc.jenkins-ci.org/hudson/model/BuildListener.html)
+-   `build` - the current build - [javadoc](https://javadoc.jenkins-ci.org/hudson/model/AbstractBuild.html)
+-   `hudson` - the current controller instance - [javadoc](https://javadoc.jenkins-ci.org/hudson/model/Hudson.html)
+-   `listener` - the build listener - [javadoc](https://javadoc.jenkins-ci.org/hudson/model/BuildListener.html)
 
 &nbsp;
 
--   envVars - the build variables map. You can get a variable value with
+-   `envVars` - the build variables map. You can get a variable value with
 
     ``` syntaxhighlighter-pre
     manager.envVars['varname']
@@ -102,32 +98,31 @@ The groovy postbuild plugin doesn't ensure that the methods of the returned obje
 
 &nbsp;
 
--   contains(file, regexp) - returns true if the given file contains a line matching *regexp*.
+-   `contains(file, regexp)` - returns true if the given file contains a line matching *regexp*.
     Not approved as it allows users access any files (for example, a file containing passwords).
--   getMatcher(file, regexp) - returns a [java.util.regex.Matcher](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/regex/Matcher.html) for the first occurrence of *regexp* in the given file.
+-   `getMatcher(file, regexp)` - returns a [java.util.regex.Matcher](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/regex/Matcher.html) for the first occurrence of *regexp* in the given file.
 
 &nbsp;
 
--   setBuildNumber(number) - sets the build with the given number as current build.
+-   `setBuildNumber(number)` - sets the build with the given number as current build.
     The current build is the target of all methods that add or remove badges and summaries or change the build result.
 
 &nbsp;
 
--   createSummary(icon) - creates an entry in the build summary page and
+-   `createSummary(icon)` - creates an entry in the build summary page and
     returns a *summary* object corresponding to this entry. The icon
     must be one of the [48x48 icons](https://github.com/jenkinsci/jenkins/tree/master/war/src/main/webapp/images/48x48)
     offered by Jenkins. You can append text to the *summary* object by
     calling its *appendText* methods. Be careful appending
     HTML-unescaped texts as they can be harmful.
-    -   appendText(text, escapeHtml)
-    -   appendText(text, escapeHtml, bold, italic, color)
--   removeSummaries() - removes all summaries from the current build.
--   removeSummary(index) - removes the summary with the given index.
+    -   `appendText(text, escapeHtml)`
+    -   `appendText(text, escapeHtml, bold, italic, color)`
+-   `removeSummaries()` - removes all summaries from the current build.
+-   `removeSummary(index)` - removes the summary with the given index.
 
 ### Rest interfaces
 
-It is also possible to delete badges and summaries by using the
-following links:
+It is also possible to delete badges and summaries by using the following links:
 
 -   remove all badges:
     -   `http``://``your-jenkins``/job/``your-job``/``build-number``/parent/parent/plugin/groovy-postbuild/removeBadges`
@@ -151,8 +146,7 @@ following links:
 
 #### Example 1
 
-The script below puts a warning badge and mark the build as unstable if
-it detects that deprecated methods were used.
+The script below puts a warning badge and mark the build as unstable if it detects that deprecated methods were used.
 
 ``` syntaxhighlighter-pre
 if(manager.logContains(".*uses or overrides a deprecated API.*")) {
@@ -166,10 +160,8 @@ if(manager.logContains(".*uses or overrides a deprecated API.*")) {
 
 #### Example 2
 
-Suppose we have a parameterized build, which uses the boolean parameter
-*storeToDB* in order to instruct the build to store some artifacts into
-the database. The script below puts a badge next to the builds for which
-this parameter is set.
+Suppose we have a parameterized build, which uses the boolean parameter *storeToDB* in order to instruct the build to store some artifacts into the database.
+The script below puts a badge next to the builds for which this parameter is set.
 
 ``` syntaxhighlighter-pre
 if("true".equals(manager.build.buildVariables.get("storeToDB"))) {
@@ -181,9 +173,8 @@ if("true".equals(manager.build.buildVariables.get("storeToDB"))) {
 
 #### Example 3
 
-Suppose we have a parameterized build, which uses the string parameter
-*version*. The script below puts a short text indicating the value of
-this parameter next to successful and unstable builds.
+Suppose we have a parameterized build, which uses the string parameter *version*.
+The script below puts a short text indicating the value of this parameter next to successful and unstable builds.
 
 ``` syntaxhighlighter-pre
 if(manager.build.result.isBetterOrEqualTo(hudson.model.Result.UNSTABLE)) {
@@ -195,8 +186,7 @@ if(manager.build.result.isBetterOrEqualTo(hudson.model.Result.UNSTABLE)) {
 
 #### Example 4
 
-The script below determines how long it took to build the project and
-displays the corresponding value as a short text next to each build.
+The script below determines how long it took to build the project and displays the corresponding value as a short text next to each build.
 
 ``` syntaxhighlighter-pre
 def matcher = manager.getLogMatcher(".*Total time: (.*)\$")
@@ -209,12 +199,8 @@ if(matcher?.matches()) {
 
 #### Example 5
 
-For badges, you can choose from the [16x16 icons](https://github.com/jenkinsci/jenkins/tree/master/war/src/main/webapp/images/16x16)
-provided by Jenkins or from the icons provided by this plugin. Some of
-the names of groovy-postbuild icons conflict with the names of Jenkins
-icons (e.g. yellow.gif). For these icons, you have to provide the
-complete path (e.g. /images/16x16/yellow.gif), in case you want a badge
-with the Jenkins icon.
+For badges, you can choose from the icons provided by this plugin.
+If the name of a groovy-postbuild icon conflicts with the name of a Jenkins icon, provide the complete path to the icon.
 
 ``` syntaxhighlighter-pre
 manager.addBadge("star-gold.gif", "icon from Jenkins")
@@ -301,8 +287,7 @@ cr.description = "My CaseResult desc"
 
 #### Example 10 (thanks to Frank Merrow)
 
-Trivial, but hard to find the first time: Write a line to the job's
-Console Output:
+Write a line to the job's console output:
 
 ``` syntaxhighlighter-pre
 manager.listener.logger.println("I want to see this line in my job's output");
@@ -310,9 +295,8 @@ manager.listener.logger.println("I want to see this line in my job's output");
 
 ## Issues
 
-To report a bug or request an enhancement to this plugin please create a
-ticket in JIRA (you need to login or to sign up for an account). Also
-please review and follow the instructions in ["How to report an issue"](https://www.jenkins.io/participate/report-issue/).
+To report a bug or request an enhancement to this plugin please create a ticket in JIRA (you need to login or to sign up for an account).
+Please review and follow the instructions in ["How to report an issue"](https://www.jenkins.io/participate/report-issue/).
 
 -   [Open Issues](https://issues.jenkins.io/issues/?jql=resolution%20is%20EMPTY%20and%20component%3D15685)
 -   [Bug report or enhancement request](https://www.jenkins.io/participate/report-issue/redirect/#15685)
@@ -324,8 +308,9 @@ Prior release notes were recorded in the repository [change log]().
 
 ## Migration from 1.X
 
-From version 2.0 (September 2014), Groovy Postbuild plugin introduces [Script Security Plugin](https://plugins.jenkins.io/script-security/).
+Beginning with version 2.0 (September 2014), Groovy Postbuild plugin introduces [Script Security Plugin](https://plugins.jenkins.io/script-security/).
 Administrators can prevent users without proper privileges from running harmful scripts.
+
 For details, see [Script Security Plugin](https://plugins.jenkins.io/script-security/).
 This doesn't affect [Jenkins without security enabled](https://www.jenkins.io/doc/book/security/securing-jenkins/) and
 users with administrative privilege (to be exact, with RUN\_SCRIPTS
