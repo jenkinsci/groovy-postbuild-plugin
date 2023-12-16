@@ -129,7 +129,7 @@ The script below puts a warning badge and mark the build as unstable if it detec
 ``` syntaxhighlighter-pre
 if(manager.logContains(".*uses or overrides a deprecated API.*")) {
     manager.addWarningBadge("Thou shalt not use deprecated methods.")
-    manager.createSummary("warning.gif").appendText("<h1>You have been warned!</h1>", false, false, false, "red")
+    manager.createSummary("warning.gif").appendText("<h1>Warned!</h1>", false, false, false, "red")
     manager.buildUnstable()
 }
 ```
