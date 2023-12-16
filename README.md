@@ -191,7 +191,7 @@ manager.addBadge("yellow.gif", "icon from groovy-postbuild plugin")
 The script below displays on the build summary page all classes that use Sun proprietary API.
 
 ``` syntaxhighlighter-pre
-pattern = ~/.*src\/main\/java\/(.*)\.java:[^ ]* (.*) is Sun proprietary API and may be removed in a future release.*/
+pattern = ~/.*src\/main\/java\/(.*)\.java:[^ ]* (.*) Sun proprietary API.*/
 def map = [:]
 manager.build.logFile.eachLine { line ->
     matcher = pattern.matcher(line)
