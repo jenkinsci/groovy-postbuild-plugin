@@ -280,7 +280,7 @@ Please review and follow the instructions in ["How to report an issue"](https://
 ## Changelog in [GitHub Releases](https://github.com/jenkinsci/groovy-postbuild-plugin/releases)
 
 Release notes have been recorded in [GitHub](https://github.com/jenkinsci/groovy-postbuild-plugin/releases) since release 2.4.
-Prior release notes are in the repository [change log](https://github.com/jenkinsci/groovy-postbuild-plugin/blob/master/CHANGELOG.md).
+Prior release notes are in the historical [change log](https://github.com/jenkinsci/groovy-postbuild-plugin/blob/228.vcdb_cf7265066/CHANGELOG.md).
 
 ## Migration from 1.X
 
