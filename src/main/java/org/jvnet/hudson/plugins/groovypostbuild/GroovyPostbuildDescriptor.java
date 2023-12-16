@@ -23,11 +23,7 @@
  */
 package org.jvnet.hudson.plugins.groovypostbuild;
 
-
-import org.kohsuke.stapler.StaplerRequest;
-
 import com.jenkinsci.plugins.badge.action.BadgeAction;
-
 import hudson.Extension;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
@@ -36,6 +32,7 @@ import hudson.model.AbstractProject;
 import hudson.model.Run;
 import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.Publisher;
+import org.kohsuke.stapler.StaplerRequest;
 
 @Extension
 public class GroovyPostbuildDescriptor extends BuildStepDescriptor<Publisher> {
@@ -68,7 +65,7 @@ public class GroovyPostbuildDescriptor extends BuildStepDescriptor<Publisher> {
      * @return true
      */
     @SuppressWarnings("unchecked")
-	@Override
+    @Override
     public final boolean isApplicable(final Class<? extends AbstractProject> clazz) {
         return true;
     }
@@ -90,7 +87,10 @@ public class GroovyPostbuildDescriptor extends BuildStepDescriptor<Publisher> {
     @Initializer(before = InitMilestone.PLUGINS_STARTED)
     public static void addAliases() {
         // migration from groovy-postbuild 2.3.1- to badge-plugin
-        Run.XSTREAM2.addCompatibilityAlias("org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildAction", BadgeAction.class);
-        Run.XSTREAM2.addCompatibilityAlias("org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildSummaryAction", GroovyPostbuildSummaryActionMigrator.class);
+        Run.XSTREAM2.addCompatibilityAlias(
+                "org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildAction", BadgeAction.class);
+        Run.XSTREAM2.addCompatibilityAlias(
+                "org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildSummaryAction",
+                GroovyPostbuildSummaryActionMigrator.class);
     }
 }

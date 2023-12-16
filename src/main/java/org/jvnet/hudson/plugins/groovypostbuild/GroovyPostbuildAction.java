@@ -24,7 +24,6 @@
 package org.jvnet.hudson.plugins.groovypostbuild;
 
 import com.jenkinsci.plugins.badge.action.BadgeAction;
-
 import hudson.model.BuildBadgeAction;
 
 /**
@@ -39,16 +38,47 @@ public class GroovyPostbuildAction implements BuildBadgeAction {
     private GroovyPostbuildAction() {}
 
     /* Action methods */
-    public String getUrlName() { return ""; }
-    public String getDisplayName() { return ""; }
-    public String getIconFileName() { return null; }
+    public String getUrlName() {
+        return "";
+    }
 
-    public boolean isTextOnly() { return false; }
-    public String getIconPath() { return null; }
-    public String getText() { return ""; }
-    public String getColor() { return "#000000"; }
-    public String getBackground() { return "#FFFF00"; }
-    public String getBorder() { return "1px"; }
-    public String getBorderColor() { return "#C0C000"; }
-    public String getLink() { return null; }
+    public String getDisplayName() {
+        return "";
+    }
+
+    public String getIconFileName() {
+        return null;
+    }
+
+    public boolean isTextOnly() {
+        return false;
+    }
+
+    public String getIconPath() {
+        return null;
+    }
+
+    public String getText() {
+        return "";
+    }
+
+    public String getColor() {
+        return "#000000";
+    }
+
+    public String getBackground() {
+        return "#FFFF00";
+    }
+
+    public String getBorder() {
+        return "1px";
+    }
+
+    public String getBorderColor() {
+        return "#C0C000";
+    }
+
+    public String getLink() {
+        return null;
+    }
 }

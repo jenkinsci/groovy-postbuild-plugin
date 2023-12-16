@@ -37,7 +37,7 @@ import org.jenkinsci.plugins.workflow.cps.GlobalVariable;
 /**
  * Exposes {@link org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder.BadgeManager} to Workflow scripts as {@code manager}.
  */
-@Extension(optional=true)
+@Extension(optional = true)
 public class WorkflowManager extends GlobalVariable {
 
     @Override
@@ -47,7 +47,7 @@ public class WorkflowManager extends GlobalVariable {
 
     @Override
     public Object getValue(CpsScript script) throws Exception {
-        Run<?,?> build = script.$build();
+        Run<?, ?> build = script.$build();
         if (build == null) {
             throw new IllegalStateException("cannot find associated build");
         }
@@ -55,5 +55,4 @@ public class WorkflowManager extends GlobalVariable {
         TaskListener listener = new LogTaskListener(Logger.getLogger(WorkflowManager.class.getName()), Level.WARNING);
         return new GroovyPostbuildRecorder.BadgeManager(build, listener, Result.FAILURE);
     }
-
 }
