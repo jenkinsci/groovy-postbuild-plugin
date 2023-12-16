@@ -49,7 +49,7 @@ Run automated tests with multiple Java virtual machines in a development environ
 $ mvn clean -DforkCount=1C verify
 ```
 
-## Report an Issue
+## Report an issue
 
 Use the ["Report an issue" page](https://www.jenkins.io/participate/report-issue/redirect/#23052) to submit bug reports.
 Please use the link:https://www.jenkins.io/participate/report-issue/["How to Report an Issue"] guidelines when reporting issues.
