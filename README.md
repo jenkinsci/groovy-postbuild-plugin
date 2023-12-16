@@ -11,8 +11,8 @@ You can always use *approved methods*, but you can use *non-approved methods* on
 
 ### Approved methods
 
--   `getEnvVariable(key)` - get a variable value. (since 1.10)
--   `getResult()` - get a build result string (like SUCCESS, FAILURE) (since 2.2)
+-   `getEnvVariable(key)` - get a variable value.
+-   `getResult()` - get a build result string (like SUCCESS, FAILURE)
 
 &nbsp;
 
@@ -57,11 +57,11 @@ You can always use *approved methods*, but you can use *non-approved methods* on
 
 &nbsp;
 
--   `addBadge(icon, text, link)` - like addBadge(icon, text), but the Badge icon then actually links to the given link (since 1.8)
+-   `addBadge(icon, text, link)` - like addBadge(icon, text), but the Badge icon then actually links to the given link
 -   `addInfoBadge(text)` - puts a badge with ![](docs/images/info.gif) info icon and the given text.
 -   `addWarningBadge(text)` - puts a badge with ![](docs/images/warning.gif) warning icon and the given text.
 -   `addErrorBadge(text)` - puts a badge with ![](docs/images/error.gif) error icon and the given text.
--   `addHtmlBadge(html)` - puts a badge with html source (since 2.5). Unsafe html codes will be removed.
+-   `addHtmlBadge(html)` - puts a badge with html source. Unsafe html codes will be removed.
 -   `removeBadges()` - removes all badges from the current build. It is often used with `setBuildNumber`.
 -   `removeBadge(index)` - removes the badge with the given index. It is often used with `setBuildNumber`.
 
@@ -73,7 +73,7 @@ You can always use *approved methods*, but you can use *non-approved methods* on
 
 &nbsp;
 
--   `buildIsA(klass)` - test the build is a specified class (since 2.0)
+-   `buildIsA(klass)` - test the build is a specified class
 
 ### Non-approved methods
 
@@ -94,7 +94,7 @@ The groovy postbuild plugin doesn't ensure that the methods of the returned obje
 
     Do not update the returned values.
     This method is not recommended for any use.
-    Use `getEnvVariable(key)` instead. (since 1.10)
+    Use `getEnvVariable(key)` instead.
 
 &nbsp;
 
