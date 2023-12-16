@@ -88,7 +88,7 @@ The groovy postbuild plugin doesn't ensure that the methods of the returned obje
 
 -   `envVars` - the build variables map. You can get a variable value with
 
-    ``` syntaxhighlighter-pre
+    ```groovy
     manager.envVars['varname']
     ```
 
@@ -126,7 +126,7 @@ The groovy postbuild plugin doesn't ensure that the methods of the returned obje
 
 The script below puts a warning badge and mark the build as unstable if it detects that deprecated methods were used.
 
-``` syntaxhighlighter-pre
+```groovy
 if(manager.logContains(".*uses or overrides a deprecated API.*")) {
     manager.addWarningBadge("Thou shalt not use deprecated methods.")
     manager.createSummary("warning.gif").appendText("<h1>Warned!</h1>", false, false, false, "red")
@@ -141,7 +141,7 @@ if(manager.logContains(".*uses or overrides a deprecated API.*")) {
 Suppose we have a parameterized build, which uses the boolean parameter *storeToDB* in order to instruct the build to store some artifacts into the database.
 The script below puts a badge next to the builds for which this parameter is set.
 
-``` syntaxhighlighter-pre
+```groovy
 if("true".equals(manager.build.buildVariables.get("storeToDB"))) {
     manager.addBadge("db_in.gif", "Stored to DB")
 }
@@ -154,7 +154,7 @@ if("true".equals(manager.build.buildVariables.get("storeToDB"))) {
 Suppose we have a parameterized build, which uses the string parameter *version*.
 The script below puts a short text indicating the value of this parameter next to successful and unstable builds.
 
-``` syntaxhighlighter-pre
+```groovy
 if(manager.build.result.isBetterOrEqualTo(hudson.model.Result.UNSTABLE)) {
     manager.addShortText("v${manager.build.buildVariables.get('version')}")
 }
@@ -166,7 +166,7 @@ if(manager.build.result.isBetterOrEqualTo(hudson.model.Result.UNSTABLE)) {
 
 The script below determines how long it took to build the project and displays the corresponding value as a short text next to each build.
 
-``` syntaxhighlighter-pre
+```groovy
 def matcher = manager.getLogMatcher(".*Total time: (.*)\$")
 if(matcher?.matches()) {
     manager.addShortText(matcher.group(1), "grey", "white", "0px", "white")
@@ -180,7 +180,7 @@ if(matcher?.matches()) {
 For badges, you can choose from the icons provided by this plugin.
 If the name of a groovy-postbuild icon conflicts with the name of a Jenkins icon, provide the complete path to the icon.
 
-``` syntaxhighlighter-pre
+```groovy
 manager.addBadge("yellow.gif", "icon from groovy-postbuild plugin")
 ```
 
@@ -190,7 +190,7 @@ manager.addBadge("yellow.gif", "icon from groovy-postbuild plugin")
 
 The script below displays on the build summary page all classes that use Sun proprietary API.
 
-``` syntaxhighlighter-pre
+```groovy
 pattern = ~/.*src\/main\/java\/(.*)\.java:[^ ]* (.*) Sun proprietary API.*/
 def map = [:]
 manager.build.logFile.eachLine { line ->
@@ -217,7 +217,7 @@ if(map.size() > 0) {
 
 The script below removes all badges and summaries from previous builds.
 
-``` syntaxhighlighter-pre
+```groovy
 currentBuildNumber = manager.build.number
 for(i=1; i<currentBuildNumber; i++) {
     if(manager.setBuildNumber(i)) {
@@ -231,7 +231,7 @@ for(i=1; i<currentBuildNumber; i++) {
 
 The script below marks the running build as deployed and the previous build as undeployed.
 
-``` syntaxhighlighter-pre
+```groovy
 manager.addShortText("deployed")
 manager.createSummary("gear2.gif").appendText("<h2>Successfully deployed</h2>", false)
 
@@ -255,7 +255,7 @@ if(manager.setBuildNumber(currentBuildNumber - 1)) {
 
 The script below changes the description of the first failed test.
 
-``` syntaxhighlighter-pre
+```groovy
 def tr = manager.build.testResultAction.result
 def cr = tr.failedTests.get(0)
 cr.description = "My CaseResult desc"
@@ -265,7 +265,7 @@ cr.description = "My CaseResult desc"
 
 Write a line to the job's console output:
 
-``` syntaxhighlighter-pre
+```groovy
 manager.listener.logger.println("I want to see this line in my job's output");
 ```
 
