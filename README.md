@@ -277,10 +277,10 @@ Please review and follow the instructions in ["How to report an issue"](https://
 -   [Open Issues](https://issues.jenkins.io/issues/?jql=resolution%20is%20EMPTY%20and%20component%3D15685)
 -   [Bug report or enhancement request](https://www.jenkins.io/participate/report-issue/redirect/#15685)
 
-## Changelog in [GitHub Releases](https://github.com/jenkinsci/git-client-plugin/releases)
+## Changelog in [GitHub Releases](https://github.com/jenkinsci/groovy-postbuild-plugin/releases)
 
-Release notes have been recorded in https://github.com/jenkinsci/git-client-plugin/releases[GitHub] since release 2.7.0.
-Prior release notes were recorded in the repository [change log]().
+Release notes have been recorded in [GitHub](https://github.com/jenkinsci/groovy-postbuild-plugin/releases) since release 2.4.
+Prior release notes are in the repository [change log](https://github.com/jenkinsci/groovy-postbuild-plugin/blob/master/CHANGELOG.md).
 
 ## Migration from 1.X
 
