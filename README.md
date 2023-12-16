@@ -84,7 +84,7 @@ The groovy postbuild plugin doesn't ensure that the methods of the returned obje
 -   `hudson` - the current controller instance - [javadoc](https://javadoc.jenkins-ci.org/hudson/model/Hudson.html)
 -   `listener` - the build listener - [javadoc](https://javadoc.jenkins-ci.org/hudson/model/BuildListener.html)
 
-&nbsp;
+#### Environment variables
 
 -   `envVars` - the build variables map. You can get a variable value with
 
@@ -96,18 +96,18 @@ The groovy postbuild plugin doesn't ensure that the methods of the returned obje
     This method is not recommended for any use.
     Use `getEnvVariable(key)` instead.
 
-&nbsp;
+#### File content matching
 
 -   `contains(file, regexp)` - returns true if the given file contains a line matching *regexp*.
     Not approved as it allows users access any files (for example, a file containing passwords).
 -   `getMatcher(file, regexp)` - returns a [java.util.regex.Matcher](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/regex/Matcher.html) for the first occurrence of *regexp* in the given file.
 
-&nbsp;
+#### Build number control
 
 -   `setBuildNumber(number)` - sets the build with the given number as current build.
     The current build is the target of all methods that add or remove badges and summaries or change the build result.
 
-&nbsp;
+#### Summary modification
 
 -   `createSummary(icon)` - creates an entry in the build summary page and
     returns a *summary* object corresponding to this entry. The icon
