@@ -120,28 +120,6 @@ The groovy postbuild plugin doesn't ensure that the methods of the returned obje
 -   `removeSummaries()` - removes all summaries from the current build.
 -   `removeSummary(index)` - removes the summary with the given index.
 
-### Rest interfaces
-
-It is also possible to delete badges and summaries by using the following links:
-
--   remove all badges:
-    -   `http``://``your-jenkins``/job/``your-job``/``build-number``/parent/parent/plugin/groovy-postbuild/removeBadges`
-
-&nbsp;
-
--   remove all summaries:
-    -   `http``://``your-jenkins``/job/``your-job``/``build-number``/parent/parent/plugin/groovy-postbuild/removeSummaries`
-
-&nbsp;
-
--   remove the badge with the given index:
-    -   `http``://``your-jenkins``/job/``your-job``/``build-number``/parent/parent/plugin/groovy-postbuild/removeBadge?index=``idx`
-
-&nbsp;
-
--   remove the summary with the given index:
-    -   `http``://``your-jenkins``/job/``your-job``/``build-number``/parent/parent/plugin/groovy-postbuild/removeSummary?index=``idx`
-
 ### Example usages
 
 #### Example 1
@@ -203,9 +181,7 @@ For badges, you can choose from the icons provided by this plugin.
 If the name of a groovy-postbuild icon conflicts with the name of a Jenkins icon, provide the complete path to the icon.
 
 ``` syntaxhighlighter-pre
-manager.addBadge("star-gold.gif", "icon from Jenkins")
 manager.addBadge("yellow.gif", "icon from groovy-postbuild plugin")
-manager.addBadge("/images/16x16/yellow.gif", "icon from Jenkins")
 ```
 
 ![](docs/images/example5.gif)
@@ -367,3 +343,29 @@ It can be performed by running a following command:
     jar -cf mylib.jar -C /path/to/classes .
 
 You can use /path/to/mylib.jar as an additonal classpath for scripts.
+
+[ REST interfaces not verified - docs are commented ]: #
+[
+### REST interfaces
+
+It is also possible to delete badges and summaries by using the following links:
+
+-   remove all badges:
+    -   `http``://``your-jenkins``/job/``your-job``/``build-number``/parent/parent/plugin/groovy-postbuild/removeBadges`
+
+&nbsp;
+
+-   remove all summaries:
+    -   `http``://``your-jenkins``/job/``your-job``/``build-number``/parent/parent/plugin/groovy-postbuild/removeSummaries`
+
+&nbsp;
+
+-   remove the badge with the given index:
+    -   `http``://``your-jenkins``/job/``your-job``/``build-number``/parent/parent/plugin/groovy-postbuild/removeBadge?index=``idx`
+
+&nbsp;
+
+-   remove the summary with the given index:
+    -   `http``://``your-jenkins``/job/``your-job``/``build-number``/parent/parent/plugin/groovy-postbuild/removeSummary?index=``idx`
+
+]: #
