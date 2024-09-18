@@ -26,7 +26,6 @@ package org.jvnet.hudson.plugins.groovypostbuild;
 import com.jenkinsci.plugins.badge.action.AbstractBadgeAction;
 import com.jenkinsci.plugins.badge.action.BadgeAction;
 import com.jenkinsci.plugins.badge.action.BadgeSummaryAction;
-import com.jenkinsci.plugins.badge.action.HtmlBadgeAction;
 import groovy.lang.Binding;
 import hudson.AbortException;
 import hudson.EnvVars;
@@ -38,6 +37,7 @@ import hudson.matrix.MatrixBuild;
 import hudson.model.*;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Recorder;
+import io.jenkins.plugins.ionicons.Ionicons;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
@@ -147,42 +147,61 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 
         @Whitelisted
         public void addShortText(String text) {
-            build.addAction(BadgeAction.createShortText(text));
+            build.addAction(new BadgeAction(null, null, text, null, null, null));
         }
 
         @Whitelisted
         public void addShortText(String text, String color, String background, String border, String borderColor) {
-            build.addAction(BadgeAction.createShortText(text, color, background, border, borderColor));
+            // translate old styling to new field
+            String style = "border: " + (border != null ? border : "") + " solid "
+                    + (borderColor != null ? borderColor : "") + ";";
+            if (background != null) {
+                style += "background: " + background + ";";
+            }
+            if (color != null) {
+                if (color.startsWith("jenkins-!-color")) {
+                    style += "color: var(--" + color.replaceFirst("jenkins-!-color", "") + ");";
+                } else if (color.startsWith("jenkins-!-")) {
+                    style += "color: var(--" + color.replaceFirst("jenkins-!-", "") + ");";
+                } else {
+                    style += "color: " + color + ";";
+                }
+            }
+
+            build.addAction(new BadgeAction(null, null, text, null, style, null));
         }
 
         @Whitelisted
         public void addBadge(String icon, String text) {
-            build.addAction(BadgeAction.createBadge(icon, text));
+            build.addAction(new BadgeAction(null, icon, text, null, null, null));
         }
 
         @Whitelisted
         public void addBadge(String icon, String text, String link) {
-            build.addAction(BadgeAction.createBadge(icon, text, link));
+            build.addAction(new BadgeAction(null, icon, text, null, null, link));
         }
 
         @Whitelisted
         public void addInfoBadge(String text) {
-            build.addAction(BadgeAction.createInfoBadge(text));
+            build.addAction(new BadgeAction(
+                    null, Ionicons.getIconClassName("information-circle"), text, null, "color: var(--blue)", null));
         }
 
         @Whitelisted
         public void addWarningBadge(String text) {
-            build.addAction(BadgeAction.createWarningBadge(text));
+            build.addAction(new BadgeAction(
+                    null, Ionicons.getIconClassName("warning"), text, null, "color: var(--warning-color)", null));
         }
 
         @Whitelisted
         public void addErrorBadge(String text) {
-            build.addAction(BadgeAction.createErrorBadge(text));
+            build.addAction(new BadgeAction(
+                    null, Ionicons.getIconClassName("remove-circle"), text, null, "color: var(--error-color)", null));
         }
 
         @Whitelisted
         public void addHtmlBadge(String html) {
-            build.addAction(HtmlBadgeAction.createHtmlBadge(html));
+            build.addAction(new BadgeAction(null, null, html, null, null, null));
         }
 
         @Whitelisted
@@ -211,7 +230,7 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
         }
 
         public BadgeSummaryAction createSummary(String icon) {
-            BadgeSummaryAction action = new BadgeSummaryAction(icon);
+            BadgeSummaryAction action = new BadgeSummaryAction(null, icon, null, null, null, null);
             build.addAction(action);
             return action;
         }
@@ -265,9 +284,7 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
             boolean isError = scriptFailureResult.isWorseThan(Result.UNSTABLE);
             String icon = isError ? "error" : "warning";
             BadgeSummaryAction summary = createSummary(icon + ".gif");
-            summary.appendText("<b><font color=\"red\">Groovy script failed:</font></b><br><pre>", false);
-            summary.appendText(writer.toString(), true);
-            summary.appendText("</pre>", false);
+            summary.setText("<b><font color=\"red\">Groovy script failed:</font></b><br><pre>" + writer + "</pre>");
 
             addShortText("Groovy", "black", isError ? "#FFE0E0" : "#FFFFC0", "1px", isError ? "#E08080" : "#C0C080");
 
