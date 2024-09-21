@@ -164,7 +164,9 @@ public class GroovyPostbuildRecorderTest {
             p.getPublishersList()
                     .add(new GroovyPostbuildRecorder(
                             new SecureGroovyScript(
-                                    "manager.addShortText('testing');", true, Collections.<ClasspathEntry>emptyList()),
+                                    "manager.addShortText('testing', null, null, null, null);",
+                                    true,
+                                    Collections.<ClasspathEntry>emptyList()),
                             behavior, // behavior
                             false // runForMatrixParent
                             ));
