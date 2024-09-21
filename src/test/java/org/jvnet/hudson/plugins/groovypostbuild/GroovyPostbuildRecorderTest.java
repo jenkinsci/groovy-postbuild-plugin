@@ -75,16 +75,24 @@ public class GroovyPostbuildRecorderTest {
                 "import hudson.matrix.MatrixRun;",
                 "if (manager.buildIsA(MatrixBuild.class)) {",
                 "  // codes for matrix parents.",
-                "  manager.addShortText(\"parent\");",
+                "  manager.addShortText('parent');",
                 "} else if(manager.buildIsA(MatrixRun)) {",
                 "  // codes for matrix children.",
-                "  manager.addShortText(manager.getEnvVariable(\"axis1\"));",
+                "  manager.addShortText(manager.getEnvVariable('axis1'),",
+                "                       'jenkins-!-color-dark-indigo',",
+                "                       'jenkins-!-color-light-purple',",
+                "                       '3px dotted',",
+                "                       'jenkins-!-success-color');",
                 "} else {",
                 "  // unexpected case.",
                 "  manager.buildFailure();",
                 "}"
             },
             '\n');
+
+    private static final String SCRIPT_FOR_MATRIX2 = SCRIPT_FOR_MATRIX
+            .replace("jenkins-!-color-dark-indigo", "jenkins-!-error-color")
+            .replace("jenkins-!-success-color", "jenkins-!-color-dark-blue");
 
     @Test
     public void testMatrixProjectWithParent() throws Exception {
@@ -120,7 +128,7 @@ public class GroovyPostbuildRecorderTest {
         p.setAxes(axisList);
         p.getPublishersList()
                 .add(new GroovyPostbuildRecorder(
-                        new SecureGroovyScript(SCRIPT_FOR_MATRIX, true, Collections.<ClasspathEntry>emptyList()),
+                        new SecureGroovyScript(SCRIPT_FOR_MATRIX2, true, Collections.<ClasspathEntry>emptyList()),
                         2,
                         false));
 
