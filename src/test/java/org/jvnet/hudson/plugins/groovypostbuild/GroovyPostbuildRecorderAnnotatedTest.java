@@ -25,6 +25,8 @@
 package org.jvnet.hudson.plugins.groovypostbuild;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import com.jenkinsci.plugins.badge.action.BadgeAction;
 import hudson.model.FreeStyleBuild;
@@ -32,12 +34,9 @@ import hudson.model.FreeStyleProject;
 import java.util.Collections;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ClasspathEntry;
-import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
-import org.jenkinsci.plugins.scriptsecurity.scripts.languages.GroovyLanguage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.recipes.WithPlugin;
 
 /**
  * Tests requires Jenkins launched for each test methods.
@@ -47,14 +46,10 @@ public class GroovyPostbuildRecorderAnnotatedTest {
     public JenkinsRule j = new JenkinsRule();
 
     @Test
-    @WithPlugin(
-            "dependee.hpi") // provides org.jenkinsci.plugins.dependencytest.dependee.Dependee.getValue() which returns
-    // "dependee".
     public void testDependencyToAnotherPlugin() throws Exception {
-        final String SCRIPT = "import org.jenkinsci.plugins.dependencytest.dependee.Dependee;"
-                + "manager.addShortText(Dependee.getValue());";
-        // as Dependee.getValue isn't whitelisted, we need to approve that.
-        ScriptApproval.get().preapprove(SCRIPT, GroovyLanguage.get());
+        // Test with script security plugin because it is already a dependency
+        final String SCRIPT = "import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApprovalLink;"
+                + "manager.addShortText((new ScriptApprovalLink()).getDisplayName());";
 
         FreeStyleProject p = j.createFreeStyleProject();
         p.getPublishersList()
@@ -63,6 +58,14 @@ public class GroovyPostbuildRecorderAnnotatedTest {
 
         FreeStyleBuild b = p.scheduleBuild2(0).get();
         j.assertBuildStatusSuccess(b);
-        assertEquals("dependee", b.getAction(BadgeAction.class).getText());
+        BadgeAction action = b.getAction(BadgeAction.class);
+        assertEquals("", action.getIconClass());
+        assertEquals("", action.getUrlName());
+        assertEquals("In-process Script Approval", action.getText());
+        assertNull(action.getBorder());
+        assertNull(action.getColor());
+        assertNull(action.getIconFileName());
+        assertNull(action.getLink());
+        assertTrue(action.isTextOnly());
     }
 }
