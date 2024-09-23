@@ -54,6 +54,30 @@ public class WorkflowTest {
         assertEquals("stuff is broken", b.getAction(BadgeAction.class).getText());
     }
 
+    @Test
+    public void usingManagerAddBadge2Args() throws Exception {
+        WorkflowJob p = r.jenkins.createProject(WorkflowJob.class, "p-addBadge2");
+        p.setDefinition(new CpsFlowDefinition("manager.addBadge('yellow.gif', 'stuff is broken')", true));
+        WorkflowRun b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals("stuff is broken", b.getAction(BadgeAction.class).getText());
+    }
+
+    @Test
+    public void usingManagerInfoBadge() throws Exception {
+        WorkflowJob p = r.jenkins.createProject(WorkflowJob.class, "p-infoBadge");
+        p.setDefinition(new CpsFlowDefinition("manager.addInfoBadge 'stuff is broken'", true));
+        WorkflowRun b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals("stuff is broken", b.getAction(BadgeAction.class).getText());
+    }
+
+    @Test
+    public void usingManagerErrorBadge() throws Exception {
+        WorkflowJob p = r.jenkins.createProject(WorkflowJob.class, "p-errorBadge");
+        p.setDefinition(new CpsFlowDefinition("manager.addErrorBadge 'stuff is broken'", true));
+        WorkflowRun b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals("stuff is broken", b.getAction(BadgeAction.class).getText());
+    }
+
     @Issue("JENKINS-54128")
     @Test
     public void logContains() throws Exception {
