@@ -159,8 +159,11 @@ Suppose we have a parameterized build, which uses the string parameter *version*
 The script below puts a short text indicating the value of this parameter next to successful and unstable builds.
 
 ```groovy
-if(manager.build.result.isBetterOrEqualTo(hudson.model.Result.UNSTABLE)) {
-    manager.addShortText("v${manager.build.buildVariables.get('version')}")
+def buildNumber = env.BUILD_ID as int
+if (buildNumber % 2) {
+    unstable("Setting build to unstable, version parameter is ${params.version}")
+} else {
+    echo "Not setting build to unstable, version parameter is ${params.version}"
 }
 ```
 
