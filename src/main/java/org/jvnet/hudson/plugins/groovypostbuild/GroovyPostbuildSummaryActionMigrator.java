@@ -36,10 +36,7 @@ import com.jenkinsci.plugins.badge.action.BadgeSummaryAction;
     private transient StringBuilder textBuilder;
 
     protected BadgeSummaryAction readResolve() {
-        BadgeSummaryAction action = new BadgeSummaryAction(iconPath);
-        if (textBuilder != null) {
-            action.appendText(textBuilder.toString(), false);
-        }
-        return action;
+        return new BadgeSummaryAction(
+                null, iconPath, textBuilder != null ? textBuilder.toString() : null, null, null, null);
     }
 }

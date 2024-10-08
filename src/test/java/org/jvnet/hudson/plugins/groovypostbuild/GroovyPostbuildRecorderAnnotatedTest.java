@@ -26,7 +26,6 @@ package org.jvnet.hudson.plugins.groovypostbuild;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 import com.jenkinsci.plugins.badge.action.BadgeAction;
 import hudson.model.FreeStyleBuild;
@@ -59,13 +58,9 @@ public class GroovyPostbuildRecorderAnnotatedTest {
         FreeStyleBuild b = p.scheduleBuild2(0).get();
         j.assertBuildStatusSuccess(b);
         BadgeAction action = b.getAction(BadgeAction.class);
-        assertEquals("", action.getIconClass());
         assertEquals("", action.getUrlName());
         assertEquals("In-process Script Approval", action.getText());
-        assertNull(action.getBorder());
-        assertNull(action.getColor());
         assertNull(action.getIconFileName());
         assertNull(action.getLink());
-        assertTrue(action.isTextOnly());
     }
 }

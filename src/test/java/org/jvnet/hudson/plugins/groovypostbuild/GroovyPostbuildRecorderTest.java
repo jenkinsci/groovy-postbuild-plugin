@@ -28,8 +28,10 @@ import static org.junit.Assert.*;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import com.jenkinsci.plugins.badge.action.AbstractBadgeAction;
 import com.jenkinsci.plugins.badge.action.BadgeAction;
 import com.jenkinsci.plugins.badge.action.BadgeSummaryAction;
+import hudson.markup.RawHtmlMarkupFormatter;
 import hudson.matrix.AxisList;
 import hudson.matrix.Combination;
 import hudson.matrix.MatrixBuild;
@@ -457,6 +459,8 @@ public class GroovyPostbuildRecorderTest {
     @Test
     @LocalData
     public void testBadgeMigration() throws Exception {
+        j.jenkins.setMarkupFormatter(RawHtmlMarkupFormatter.INSTANCE);
+
         FreeStyleProject p = j.jenkins.getItemByFullName("groovy-postbuild-2.3.1", FreeStyleProject.class);
         assertNotNull(p);
 
@@ -467,17 +471,14 @@ public class GroovyPostbuildRecorderTest {
 
             BadgeAction badgeAction = b.getAction(BadgeAction.class);
             assertNotNull(badgeAction);
-            assertEquals("/plugin/groovy-postbuild/images/success.gif", badgeAction.getIconPath());
+            assertEquals("/plugin/groovy-postbuild/images/success.gif", badgeAction.getIcon());
             assertEquals("shortText", badgeAction.getText());
-            assertEquals("#000000", badgeAction.getColor());
-            assertEquals("#FFFF00", badgeAction.getBackground());
-            assertEquals("1px", badgeAction.getBorder());
-            assertEquals("#C0C000", badgeAction.getBorderColor());
+            assertEquals("border: 1px solid #C0C000;background: #FFFF00;color: #000000;", badgeAction.getStyle());
             assertEquals("https://jenkins.io/", badgeAction.getLink());
 
             BadgeSummaryAction badgeSummaryAction = b.getAction(BadgeSummaryAction.class);
             assertNotNull(badgeSummaryAction);
-            assertEquals("info.gif", badgeSummaryAction.getIconPath());
+            assertEquals("/plugin/badge/images/info.gif", badgeSummaryAction.getIcon());
             assertEquals("<b>summaryText</b>", badgeSummaryAction.getText());
         }
 
@@ -488,13 +489,13 @@ public class GroovyPostbuildRecorderTest {
 
             BadgeAction badgeAction = b.getAction(BadgeAction.class);
             assertNotNull(badgeAction);
-            assertEquals(BadgeAction.getIconPath("success.gif"), badgeAction.getIconPath());
+            assertEquals("/plugin/badge/images/success.gif", badgeAction.getIcon());
             assertEquals("shortText", badgeAction.getText());
             assertEquals("https://jenkins.io/", badgeAction.getLink());
 
             BadgeSummaryAction badgeSummaryAction = b.getAction(BadgeSummaryAction.class);
             assertNotNull(badgeSummaryAction);
-            assertEquals("info.gif", badgeSummaryAction.getIconPath());
+            assertEquals("/plugin/badge/images/info.gif", badgeSummaryAction.getIcon());
             assertEquals("<b>summaryText</b>", badgeSummaryAction.getText());
         }
     }
@@ -647,17 +648,13 @@ public class GroovyPostbuildRecorderTest {
 
         FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
         assertEquals(
-                Arrays.asList("test2"),
-                Lists.transform(b.getActions(BadgeAction.class), new Function<BadgeAction, String>() {
-                    @Override
-                    public String apply(BadgeAction badge) {
-                        return badge.getText();
-                    }
-                }));
+                Arrays.asList("test2"), Lists.transform(b.getActions(BadgeAction.class), AbstractBadgeAction::getText));
     }
 
     @Test
     public void testRemoveSummary() throws Exception {
+        j.jenkins.setMarkupFormatter(RawHtmlMarkupFormatter.INSTANCE);
+
         String template = "method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder$BadgeManager %s";
         ScriptApproval.get().approveSignature(String.format(template, "removeSummary int"));
         ScriptApproval.get().approveSignature(String.format(template, "createSummary java.lang.String"));
@@ -676,12 +673,7 @@ public class GroovyPostbuildRecorderTest {
         FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
         assertEquals(
                 Arrays.asList("Test2"),
-                Lists.transform(b.getActions(BadgeSummaryAction.class), new Function<BadgeSummaryAction, String>() {
-                    @Override
-                    public String apply(BadgeSummaryAction action) {
-                        return action.getText();
-                    }
-                }));
+                Lists.transform(b.getActions(BadgeSummaryAction.class), AbstractBadgeAction::getText));
     }
 
     @Test
