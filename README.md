@@ -139,12 +139,16 @@ if(manager.logContains(".*uses or overrides a deprecated API.*")) {
 #### Example 2
 
 Suppose we have a parameterized build, which uses the boolean parameter *storeToDB* in order to instruct the build to store some artifacts into the database.
-The script below puts a badge next to the builds for which this parameter is set.
+The script below puts a badge next to the builds for which this parameter is set with short text.
 
 ```groovy
-if("true".equals(manager.build.buildVariables.get("storeToDB"))) {
-    manager.addBadge("db_in.gif", "Stored to DB")
+// Declarative Pipeline script block
+if (params.storeToDB) {
+    manager.addBadge("db_in.gif", "Stored in DB")
+} else {
+    manager.addBadge("delete.gif", "Not stored in DB")
 }
+manager.addShortText(params.storeToDB ? "In DB" : "Not in DB")
 ```
 
 ![](docs/images/example2.png)
