@@ -134,7 +134,7 @@ if(manager.logContains(".*uses or overrides a deprecated API.*")) {
 }
 ```
 
-[TABLE]
+![](docs/images/example1.png)
 
 #### Example 2
 
@@ -147,7 +147,7 @@ if("true".equals(manager.build.buildVariables.get("storeToDB"))) {
 }
 ```
 
-![](docs/images/example2.gif)
+![](docs/images/example2.png)
 
 #### Example 3
 
@@ -160,7 +160,7 @@ if(manager.build.result.isBetterOrEqualTo(hudson.model.Result.UNSTABLE)) {
 }
 ```
 
-![](docs/images/example3.gif)
+![](docs/images/example3.png)
 
 #### Example 4
 
@@ -173,7 +173,7 @@ if(matcher?.matches()) {
 }
 ```
 
-![](docs/images/example4.gif)
+![](docs/images/example4.png)
 
 #### Example 5
 
@@ -184,90 +184,7 @@ If the name of a groovy-postbuild icon conflicts with the name of a Jenkins icon
 manager.addBadge("yellow.gif", "icon from groovy-postbuild plugin")
 ```
 
-![](docs/images/example5.gif)
-
-#### Example 6
-
-The script below displays on the build summary page all classes that use Sun proprietary API.
-
-```groovy
-pattern = ~/.*src\/main\/java\/(.*)\.java:[^ ]* (.*) Sun proprietary API.*/
-def map = [:]
-manager.build.logFile.eachLine { line ->
-    matcher = pattern.matcher(line)
-    if(matcher.matches()) {
-        ownClass = matcher.group(1).replaceAll("/", ".")
-        sunClass = matcher.group(2)
-        map[ownClass] = sunClass
-    }
-}
-if(map.size() > 0) {
-    def summary = manager.createSummary("warning.gif")
-    summary.appendText("Classes using Sun proprietary API:<ul>", false)
-    map.each {
-        summary.appendText("<li><b>$it.key</b> - uses $it.value</li>", false)
-    }
-    summary.appendText("</ul>", false)
-}
-```
-
-![](docs/images/example6.gif)
-
-#### Example 7
-
-The script below removes all badges and summaries from previous builds.
-
-```groovy
-currentBuildNumber = manager.build.number
-for(i=1; i<currentBuildNumber; i++) {
-    if(manager.setBuildNumber(i)) {
-        manager.removeBadges()
-        manager.removeSummaries()
-    }
-}
-```
-
-#### Example 8
-
-The script below marks the running build as deployed and the previous build as undeployed.
-
-```groovy
-manager.addShortText("deployed")
-manager.createSummary("gear2.gif").appendText("<h2>Successfully deployed</h2>", false)
-
-currentBuildNumber = manager.build.number
-if(manager.setBuildNumber(currentBuildNumber - 1)) {
-   actions = manager.build.actions
-    actions.each { action ->
-        if (action.metaClass.hasProperty(action, "text") && action.text.contains("deployed")) {
-            actions.remove(action)
-        }
-    }
-    currDate = new Date().dateTimeString
-    manager.addShortText("undeployed: $currDate", "grey", "white", "0px", "white")
-    manager.createSummary("gear2.gif").appendText("<h2>Undeployed: $currDate</h2>", false, false, false, "grey")
-}
-```
-
-![](docs/images/example8.gif)
-
-#### Example 9 (thanks to Ken Bertelson)
-
-The script below changes the description of the first failed test.
-
-```groovy
-def tr = manager.build.testResultAction.result
-def cr = tr.failedTests.get(0)
-cr.description = "My CaseResult desc"
-```
-
-#### Example 10 (thanks to Frank Merrow)
-
-Write a line to the job's console output:
-
-```groovy
-manager.listener.logger.println("I want to see this line in my job's output");
-```
+![](docs/images/example5.png)
 
 ## Issues
 
