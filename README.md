@@ -1,7 +1,17 @@
 # Groovy postbuild plugin
 
-This plugin executes a groovy script in the Jenkins JVM as a post-build action (a publisher) .
+This plugin executes a groovy script in the Jenkins JVM as a post-build action (a publisher).
 Typically, the script checks some conditions and updates the build result, puts badges next to the build in the build history, and/or displays information on the build summary page.
+
+The plugin honors the [markup formatter](https://www.jenkins.io/doc/book/security/markup-formatter/) defined in Jenkins.
+Markup formatters that have been tested with the plugin include:
+
+* Plain text formatter, the Jenkins default
+* Safe HTML formatter, provided by the [OWASP markup formatter plugin](https://plugins.jenkins.io/antisamy-markup-formatter)
+* [Markdown](https://en.wikipedia.org/wiki/Markdown) formatter, provided by the [Markdown formatter plugin](https://plugins.jenkins.io/markdown-formatter/)
+
+Releases 228.vcdb_cf7265066 and before applied a subset of safe HTML formatting with no alternative formatter.
+Users upgrading to newer releases may need to install the [OWASP markup formatter plugin](https://plugins.jenkins.io/antisamy-markup-formatter) and enable the safe HTML formatter in order to have the same interpretation of the text in their groocy postbuild scripts.
 
 ## Usage
 
