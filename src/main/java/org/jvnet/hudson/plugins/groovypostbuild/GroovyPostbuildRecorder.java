@@ -406,7 +406,12 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
                 }
                 classpath = null;
             }
-            script = new SecureGroovyScript(groovyScript, false, cp).configuring(ApprovalContext.create());
+            try {
+                script = new SecureGroovyScript(groovyScript, false, cp).configuring(ApprovalContext.create());
+            } catch (Descriptor.FormException ex) {
+                LOGGER.log(Level.WARNING, "Failed to resolve groovy script during readResolve ", ex);
+            }
+
             groovyScript = null;
         }
         return this;
