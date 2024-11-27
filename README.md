@@ -11,7 +11,8 @@ Markup formatters that have been tested with the plugin include:
 * [Markdown](https://en.wikipedia.org/wiki/Markdown) formatter, provided by the [Markdown formatter plugin](https://plugins.jenkins.io/markdown-formatter/)
 
 Releases 228.vcdb_cf7265066 and before applied a subset of safe HTML formatting with no alternative formatter.
-Users upgrading to newer releases may need to install the [OWASP markup formatter plugin](https://plugins.jenkins.io/antisamy-markup-formatter) and enable the safe HTML formatter in order to have the same interpretation of the text in their groovy postbuild scripts.
+Users upgrading to newer releases may need to install the [OWASP markup formatter plugin](https://plugins.jenkins.io/antisamy-markup-formatter) and enable the safe HTML formatter in order to have the same interpretation of the text in their
+groovy postbuild scripts. To enable it, go to Manage Jenkins -> Security -> Markup Formatter and select "Safe HTML".
 
 ## Usage
 
