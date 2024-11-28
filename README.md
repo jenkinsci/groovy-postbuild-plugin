@@ -120,9 +120,13 @@ The groovy postbuild plugin doesn't ensure that the methods of the returned obje
 #### Summary modification
 
 -   `createSummary(icon)` - creates an entry in the build summary page and
-    returns a *summary* object corresponding to this entry. The icon
-    must be one of the [48x48 icons](https://github.com/jenkinsci/jenkins/tree/master/war/src/main/webapp/images/48x48)
-    offered by Jenkins. You can append text to the *summary* object by
+    returns a *summary* object corresponding to this entry.
+
+    The icon can be one of [IonIcons](https://ionic.io/ionicons) referenced by
+    `symbol-<name> plugin-ionicons-api`, or Jenkins core icon referenced by
+    `icon-<name>` or `symbol-<name>`. See examples [here](https://www.jenkins.io/doc/pipeline/steps/badge/#addbadge-add-badge).
+
+    You can append text to the *summary* object by
     calling its *appendText* methods. Be careful appending
     HTML-unescaped texts as they can be harmful.
     -   `appendText(text, escapeHtml)`
