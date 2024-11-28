@@ -123,7 +123,7 @@ The groovy postbuild plugin doesn't ensure that the methods of the returned obje
     returns a *summary* object corresponding to this entry.
 
     The icon can be one of [IonIcons](https://ionic.io/ionicons) referenced by
-    `symbol-<name> plugin-ionicons-api`, or Jenkins Core icon referenced by
+    `symbol-<name> plugin-ionicons-api`, or Jenkins core icon referenced by
     `icon-<name>` or `symbol-<name>`. See examples [here](https://www.jenkins.io/doc/pipeline/steps/badge/#addbadge-add-badge).
 
     You can append text to the *summary* object by
