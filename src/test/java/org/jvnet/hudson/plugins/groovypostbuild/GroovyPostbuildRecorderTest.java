@@ -43,6 +43,7 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.Result;
 import hudson.model.User;
+import hudson.util.VersionNumber;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -478,7 +479,15 @@ public class GroovyPostbuildRecorderTest {
 
             BadgeSummaryAction badgeSummaryAction = b.getAction(BadgeSummaryAction.class);
             assertNotNull(badgeSummaryAction);
-            assertEquals("/plugin/badge/images/info.gif", badgeSummaryAction.getIcon());
+
+            VersionNumber badgePluginVersion =
+                    j.getPluginManager().getPlugin("badge").getVersionNumber();
+
+            if (badgePluginVersion.isNewerThanOrEqualTo(new VersionNumber("2.5"))) {
+                assertEquals("symbol-information-circle", badgeSummaryAction.getIcon());
+            } else {
+                assertEquals("/plugin/badge/images/info.gif", badgeSummaryAction.getIcon());
+            }
             assertEquals("<b>summaryText</b>", badgeSummaryAction.getText());
         }
 
@@ -487,15 +496,28 @@ public class GroovyPostbuildRecorderTest {
             FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
             assertNotNull(b);
 
+            VersionNumber badgePluginVersion =
+                    j.getPluginManager().getPlugin("badge").getVersionNumber();
+
             BadgeAction badgeAction = b.getAction(BadgeAction.class);
             assertNotNull(badgeAction);
-            assertEquals("/plugin/badge/images/success.gif", badgeAction.getIcon());
+
+            if (badgePluginVersion.isNewerThanOrEqualTo(new VersionNumber("2.5"))) {
+                assertEquals("symbol-status-blue", badgeAction.getIcon());
+            } else {
+                assertEquals("/plugin/badge/images/success.gif", badgeAction.getIcon());
+            }
             assertEquals("shortText", badgeAction.getText());
             assertEquals("https://jenkins.io/", badgeAction.getLink());
 
             BadgeSummaryAction badgeSummaryAction = b.getAction(BadgeSummaryAction.class);
             assertNotNull(badgeSummaryAction);
-            assertEquals("/plugin/badge/images/info.gif", badgeSummaryAction.getIcon());
+
+            if (badgePluginVersion.isNewerThanOrEqualTo(new VersionNumber("2.5"))) {
+                assertEquals("symbol-information-circle", badgeSummaryAction.getIcon());
+            } else {
+                assertEquals("/plugin/badge/images/info.gif", badgeSummaryAction.getIcon());
+            }
             assertEquals("<b>summaryText</b>", badgeSummaryAction.getText());
         }
     }
