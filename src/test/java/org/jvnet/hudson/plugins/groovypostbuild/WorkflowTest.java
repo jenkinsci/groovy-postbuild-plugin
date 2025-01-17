@@ -83,11 +83,11 @@ public class WorkflowTest {
     public void logContains() throws Exception {
         WorkflowJob p = r.jenkins.createProject(WorkflowJob.class, "p");
         p.setDefinition(new CpsFlowDefinition(
-                "echo '1st message'\n" + "echo '2nd message'\n"
-                        + "sleep 1\n"
-                        + // to flush output (inspecting Run.log from the build itself is unreliable; use a
-                        // TaskListenerDecorator instead)
-                        "echo(/found first message? ${manager.logContains(/1st message/)} second? ${manager.logContains(/2nd message/)} third? ${manager.logContains(/3rd message/)} /); ",
+                """
+                echo '1st message'
+                echo '2nd message'
+                sleep 1
+                echo(/found first message? ${manager.logContains(/1st message/)} second? ${manager.logContains(/2nd message/)} third? ${manager.logContains(/3rd message/)} /); """,
                 true));
         logging.record(WorkflowRun.class, Level.WARNING).capture(100);
         r.assertLogContains(

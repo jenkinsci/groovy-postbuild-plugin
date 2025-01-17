@@ -611,9 +611,11 @@ public class GroovyPostbuildRecorderTest {
         p.getPublishersList()
                 .add(new GroovyPostbuildRecorder(
                         new SecureGroovyScript(
-                                "manager.addShortText('test1');\n"
-                                        + "manager.addShortText('test2');\n"
-                                        + "manager.removeBadge(0);",
+                                """
+                                manager.addShortText('test1');
+                                manager.addShortText('test2');
+                                manager.removeBadge(0);\
+                                """,
                                 true, // sandbox
                                 Collections.<ClasspathEntry>emptyList()),
                         2, // behavior
@@ -638,9 +640,11 @@ public class GroovyPostbuildRecorderTest {
         p.getPublishersList()
                 .add(new GroovyPostbuildRecorder(
                         new SecureGroovyScript(
-                                "manager.addShortText('test1');\n"
-                                        + "manager.addShortText('test2');\n"
-                                        + "manager.removeBadges();",
+                                """
+                                manager.addShortText('test1');
+                                manager.addShortText('test2');
+                                manager.removeBadges();\
+                                """,
                                 true, // sandbox
                                 Collections.<ClasspathEntry>emptyList()),
                         2, // behavior
@@ -659,9 +663,11 @@ public class GroovyPostbuildRecorderTest {
         p.getPublishersList()
                 .add(new GroovyPostbuildRecorder(
                         new SecureGroovyScript(
-                                "manager.addHtmlBadge('test1');\n"
-                                        + "manager.addShortText('test2');\n"
-                                        + "manager.removeBadge(0);",
+                                """
+                                manager.addHtmlBadge('test1');
+                                manager.addShortText('test2');
+                                manager.removeBadge(0);\
+                                """,
                                 true, // sandbox
                                 Collections.<ClasspathEntry>emptyList()),
                         2, // behavior
@@ -678,15 +684,17 @@ public class GroovyPostbuildRecorderTest {
         j.jenkins.setMarkupFormatter(RawHtmlMarkupFormatter.INSTANCE);
 
         String template = "method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder$BadgeManager %s";
-        ScriptApproval.get().approveSignature(String.format(template, "removeSummary int"));
-        ScriptApproval.get().approveSignature(String.format(template, "createSummary java.lang.String"));
+        ScriptApproval.get().approveSignature(template.formatted("removeSummary int"));
+        ScriptApproval.get().approveSignature(template.formatted("createSummary java.lang.String"));
         FreeStyleProject p = j.createFreeStyleProject();
         p.getPublishersList()
                 .add(new GroovyPostbuildRecorder(
                         new SecureGroovyScript(
-                                "manager.createSummary('attribute.png').appendText('Test1', false, false, false, 'Black');\n"
-                                        + "manager.createSummary('attribute.png').appendText('Test2', false, false, false, 'Black');\n"
-                                        + "manager.removeSummary(0);",
+                                """
+                                manager.createSummary('attribute.png').appendText('Test1', false, false, false, 'Black');
+                                manager.createSummary('attribute.png').appendText('Test2', false, false, false, 'Black');
+                                manager.removeSummary(0);\
+                                """,
                                 true,
                                 Collections.<ClasspathEntry>emptyList()),
                         2, // behavior
@@ -701,14 +709,16 @@ public class GroovyPostbuildRecorderTest {
     @Test
     public void testRemoveSummaries() throws Exception {
         String template = "method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder$BadgeManager %s";
-        ScriptApproval.get().approveSignature(String.format(template, "removeSummaries"));
-        ScriptApproval.get().approveSignature(String.format(template, "createSummary java.lang.String"));
+        ScriptApproval.get().approveSignature(template.formatted("removeSummaries"));
+        ScriptApproval.get().approveSignature(template.formatted("createSummary java.lang.String"));
         FreeStyleProject p = j.createFreeStyleProject();
         p.getPublishersList()
                 .add(new GroovyPostbuildRecorder(
                         new SecureGroovyScript(
-                                "manager.createSummary('attribute.png').appendText('Test1', false, false, false, 'Black');\n"
-                                        + "manager.removeSummaries();",
+                                """
+                                manager.createSummary('attribute.png').appendText('Test1', false, false, false, 'Black');
+                                manager.removeSummaries();\
+                                """,
                                 true,
                                 Collections.<ClasspathEntry>emptyList()),
                         2, // behavior
