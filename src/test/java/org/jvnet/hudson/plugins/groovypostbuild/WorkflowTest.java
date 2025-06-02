@@ -23,7 +23,7 @@
  */
 package org.jvnet.hudson.plugins.groovypostbuild;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.jenkinsci.plugins.badge.action.BadgeAction;
 import java.util.Collections;
@@ -31,67 +31,72 @@ import java.util.logging.Level;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.Issue;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.LoggerRule;
+import org.jvnet.hudson.test.LogRecorder;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
-public class WorkflowTest {
+@WithJenkins
+class WorkflowTest {
 
-    @Rule
-    public JenkinsRule r = new JenkinsRule();
+    private final LogRecorder logging = new LogRecorder();
 
-    @Rule
-    public LoggerRule logging = new LoggerRule();
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Issue("JENKINS-26918")
     @Test
-    public void usingManager() throws Exception {
-        WorkflowJob p = r.jenkins.createProject(WorkflowJob.class, "p");
+    void usingManager() throws Exception {
+        WorkflowJob p = j.jenkins.createProject(WorkflowJob.class, "p");
         p.setDefinition(new CpsFlowDefinition("manager.addWarningBadge 'stuff is broken'", true));
-        WorkflowRun b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        WorkflowRun b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
         assertEquals("stuff is broken", b.getAction(BadgeAction.class).getText());
     }
 
     @Test
-    public void usingManagerAddBadge2Args() throws Exception {
-        WorkflowJob p = r.jenkins.createProject(WorkflowJob.class, "p-addBadge2");
+    void usingManagerAddBadge2Args() throws Exception {
+        WorkflowJob p = j.jenkins.createProject(WorkflowJob.class, "p-addBadge2");
         p.setDefinition(new CpsFlowDefinition("manager.addBadge('yellow.gif', 'stuff is broken')", true));
-        WorkflowRun b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        WorkflowRun b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
         assertEquals("stuff is broken", b.getAction(BadgeAction.class).getText());
     }
 
     @Test
-    public void usingManagerInfoBadge() throws Exception {
-        WorkflowJob p = r.jenkins.createProject(WorkflowJob.class, "p-infoBadge");
+    void usingManagerInfoBadge() throws Exception {
+        WorkflowJob p = j.jenkins.createProject(WorkflowJob.class, "p-infoBadge");
         p.setDefinition(new CpsFlowDefinition("manager.addInfoBadge 'stuff is broken'", true));
-        WorkflowRun b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        WorkflowRun b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
         assertEquals("stuff is broken", b.getAction(BadgeAction.class).getText());
     }
 
     @Test
-    public void usingManagerErrorBadge() throws Exception {
-        WorkflowJob p = r.jenkins.createProject(WorkflowJob.class, "p-errorBadge");
+    void usingManagerErrorBadge() throws Exception {
+        WorkflowJob p = j.jenkins.createProject(WorkflowJob.class, "p-errorBadge");
         p.setDefinition(new CpsFlowDefinition("manager.addErrorBadge 'stuff is broken'", true));
-        WorkflowRun b = r.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        WorkflowRun b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
         assertEquals("stuff is broken", b.getAction(BadgeAction.class).getText());
     }
 
     @Issue("JENKINS-54128")
     @Test
-    public void logContains() throws Exception {
-        WorkflowJob p = r.jenkins.createProject(WorkflowJob.class, "p");
+    void logContains() throws Exception {
+        WorkflowJob p = j.jenkins.createProject(WorkflowJob.class, "p");
         p.setDefinition(new CpsFlowDefinition(
                 """
                 echo '1st message'
                 echo '2nd message'
                 sleep 1
-                echo(/found first message? ${manager.logContains(/1st message/)} second? ${manager.logContains(/2nd message/)} third? ${manager.logContains(/3rd message/)} /); """,
+                echo(/found first message? ${manager.logContains(/1st message/)} second? ${manager.logContains(/2nd message/)} third? ${manager.logContains(/3rd message/)} /);""",
                 true));
         logging.record(WorkflowRun.class, Level.WARNING).capture(100);
-        r.assertLogContains(
-                "found first message? true second? true third? false", r.assertBuildStatusSuccess(p.scheduleBuild2(0)));
+        j.assertLogContains(
+                "found first message? true second? true third? false", j.assertBuildStatusSuccess(p.scheduleBuild2(0)));
         assertEquals(Collections.emptyList(), logging.getRecords());
     }
 }
