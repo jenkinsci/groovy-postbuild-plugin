@@ -24,36 +24,42 @@
 
 package org.jvnet.hudson.plugins.groovypostbuild;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import com.jenkinsci.plugins.badge.action.BadgeAction;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
 import java.util.Collections;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
-import org.jenkinsci.plugins.scriptsecurity.scripts.ClasspathEntry;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.junit.jupiter.WithJenkins;
 
 /**
  * Tests requires Jenkins launched for each test methods.
  */
-public class GroovyPostbuildRecorderAnnotatedTest {
-    @Rule
-    public JenkinsRule j = new JenkinsRule();
+@WithJenkins
+class GroovyPostbuildRecorderAnnotatedTest {
+
+    private JenkinsRule j;
+
+    @BeforeEach
+    void setUp(JenkinsRule rule) {
+        j = rule;
+    }
 
     @Test
-    public void testDependencyToAnotherPlugin() throws Exception {
+    void testDependencyToAnotherPlugin() throws Exception {
         // Test with script security plugin because it is already a dependency
-        final String SCRIPT = "import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApprovalLink;"
+        String script = "import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApprovalLink;"
                 + "manager.addShortText((new ScriptApprovalLink()).getDisplayName());";
 
         FreeStyleProject p = j.createFreeStyleProject();
         p.getPublishersList()
                 .add(new GroovyPostbuildRecorder(
-                        new SecureGroovyScript(SCRIPT, false, Collections.<ClasspathEntry>emptyList()), 2, false));
+                        new SecureGroovyScript(script, false, Collections.emptyList()), 2, false));
 
         FreeStyleBuild b = p.scheduleBuild2(0).get();
         j.assertBuildStatusSuccess(b);
