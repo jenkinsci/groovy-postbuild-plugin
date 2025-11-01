@@ -678,14 +678,11 @@ class GroovyPostbuildRecorderTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getPublishersList()
                 .add(new GroovyPostbuildRecorder(
-                        new SecureGroovyScript(
-                                """
+                        new SecureGroovyScript("""
                                 manager.createSummary('attribute.png').appendText('Test1', false, false, false, 'Black');
                                 manager.createSummary('attribute.png').appendText('Test2', false, false, false, 'Black');
                                 manager.removeSummary(0);
-                                """,
-                                true,
-                                Collections.emptyList()),
+                                """, true, Collections.emptyList()),
                         2, // behavior
                         false // runForMatrixParent
                         ));
@@ -703,13 +700,10 @@ class GroovyPostbuildRecorderTest {
         FreeStyleProject p = j.createFreeStyleProject();
         p.getPublishersList()
                 .add(new GroovyPostbuildRecorder(
-                        new SecureGroovyScript(
-                                """
+                        new SecureGroovyScript("""
                                 manager.createSummary('attribute.png').appendText('Test1', false, false, false, 'Black');
                                 manager.removeSummaries();
-                                """,
-                                true,
-                                Collections.emptyList()),
+                                """, true, Collections.emptyList()),
                         2, // behavior
                         false // runForMatrixParent
                         ));
