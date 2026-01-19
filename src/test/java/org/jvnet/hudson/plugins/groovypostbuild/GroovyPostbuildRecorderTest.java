@@ -48,7 +48,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import jenkins.security.QueueItemAuthenticatorConfiguration;
-import org.apache.commons.lang.StringUtils;
 import org.hamcrest.Matchers;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
@@ -68,26 +67,24 @@ class GroovyPostbuildRecorderTest {
 
     private static final String TEXT_ON_FAILED = "Groovy";
 
-    private static final String SCRIPT_FOR_MATRIX = StringUtils.join(
-            new String[] {
-                "import hudson.matrix.MatrixBuild;",
-                "import hudson.matrix.MatrixRun;",
-                "if (manager.buildIsA(MatrixBuild.class)) {",
-                "  // codes for matrix parents.",
-                "  manager.addShortText('parent');",
-                "} else if(manager.buildIsA(MatrixRun)) {",
-                "  // codes for matrix children.",
-                "  manager.addShortText(manager.getEnvVariable('axis1'),",
-                "                       'jenkins-!-color-dark-indigo',",
-                "                       'jenkins-!-color-light-purple',",
-                "                       '3px dotted',",
-                "                       'jenkins-!-success-color');",
-                "} else {",
-                "  // unexpected case.",
-                "  manager.buildFailure();",
-                "}"
-            },
-            '\n');
+    private static final String SCRIPT_FOR_MATRIX = String.join("\n", new String[] {
+        "import hudson.matrix.MatrixBuild;",
+        "import hudson.matrix.MatrixRun;",
+        "if (manager.buildIsA(MatrixBuild.class)) {",
+        "  // codes for matrix parents.",
+        "  manager.addShortText('parent');",
+        "} else if(manager.buildIsA(MatrixRun)) {",
+        "  // codes for matrix children.",
+        "  manager.addShortText(manager.getEnvVariable('axis1'),",
+        "                       'jenkins-!-color-dark-indigo',",
+        "                       'jenkins-!-color-light-purple',",
+        "                       '3px dotted',",
+        "                       'jenkins-!-success-color');",
+        "} else {",
+        "  // unexpected case.",
+        "  manager.buildFailure();",
+        "}"
+    });
 
     private static final String SCRIPT_FOR_MATRIX2 = SCRIPT_FOR_MATRIX
             .replace("jenkins-!-color-dark-indigo", "jenkins-!-error-color")
