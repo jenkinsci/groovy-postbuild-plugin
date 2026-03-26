@@ -52,6 +52,7 @@ import org.hamcrest.Matchers;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.Issue;
@@ -665,6 +666,7 @@ class GroovyPostbuildRecorderTest {
         assertEquals(List.of("test2"), Lists.transform(b.getActions(BadgeAction.class), AbstractBadgeAction::getText));
     }
 
+    @Disabled("badges plugin 3.x breaks compatibility for this use case, use Pipeline instead of freestyle")
     @Test
     void testRemoveSummary() throws Exception {
         j.jenkins.setMarkupFormatter(RawHtmlMarkupFormatter.INSTANCE);
