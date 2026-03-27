@@ -184,7 +184,13 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
         @Whitelisted
         public void addInfoBadge(String text) {
             build.addAction(new BadgeAction(
-                    null, Ionicons.getIconClassName("information-circle"), text, null, "color: var(--blue)", null, null));
+                    null,
+                    Ionicons.getIconClassName("information-circle"),
+                    text,
+                    null,
+                    "color: var(--blue)",
+                    null,
+                    null));
         }
 
         @Whitelisted
@@ -196,7 +202,13 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
         @Whitelisted
         public void addErrorBadge(String text) {
             build.addAction(new BadgeAction(
-                    null, Ionicons.getIconClassName("remove-circle"), text, null, "color: var(--error-color)", null, null));
+                    null,
+                    Ionicons.getIconClassName("remove-circle"),
+                    text,
+                    null,
+                    "color: var(--error-color)",
+                    null,
+                    null));
         }
 
         @Whitelisted

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2004-2010, Sun Microsystems, Inc., Serban Iordache
+ * Copyright (c) 2018 IKEDA Yasuyuki
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,61 +24,38 @@
 package org.jvnet.hudson.plugins.groovypostbuild;
 
 import com.jenkinsci.plugins.badge.action.BadgeAction;
-import hudson.model.BuildBadgeAction;
 
 /**
- * Left for backward binary compatibilities.
+ * Converts GroovyPostbuildAction to {@link BadgeAction}
  *
- * This doesn't provide any actual features.
- *
- * @deprecated use {@link BadgeAction} instead.
  */
-@Deprecated
-public class GroovyPostbuildAction implements BuildBadgeAction {
-    private GroovyPostbuildAction() {}
+/*package*/ class GroovyPostbuildActionMigrator {
+    private transient String iconPath;
+    private transient String text;
+    private transient String color;
+    private transient String background;
+    private transient String border;
+    private transient String borderColor;
+    private transient String link;
 
-    /* Action methods */
-    public String getUrlName() {
-        return "";
-    }
+    protected BadgeAction readResolve() {
+        String style = "";
+        if (border != null) {
+            style += "border: " + border + " solid " + (borderColor != null ? borderColor : "") + ";";
+        }
+        if (background != null) {
+            style += "background: " + background + ";";
+        }
+        if (color != null) {
+            if (color.startsWith("jenkins-!-color")) {
+                style += "color: var(--" + color.replaceFirst("jenkins-!-color-", "") + ");";
+            } else if (color.startsWith("jenkins-!-")) {
+                style += "color: var(--" + color.replaceFirst("jenkins-!-", "") + ");";
+            } else {
+                style += "color: " + color + ";";
+            }
+        }
 
-    public String getDisplayName() {
-        return "";
-    }
-
-    public String getIconFileName() {
-        return null;
-    }
-
-    public boolean isTextOnly() {
-        return false;
-    }
-
-    public String getIconPath() {
-        return null;
-    }
-
-    public String getText() {
-        return "";
-    }
-
-    public String getColor() {
-        return "#000000";
-    }
-
-    public String getBackground() {
-        return "#FFFF00";
-    }
-
-    public String getBorder() {
-        return "1px";
-    }
-
-    public String getBorderColor() {
-        return "#C0C000";
-    }
-
-    public String getLink() {
-        return null;
+        return new BadgeAction(null, iconPath, text, null, style, link, null);
     }
 }
