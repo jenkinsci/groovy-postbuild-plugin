@@ -16,7 +16,7 @@
     <org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder plugin="groovy-postbuild@2.4-SNAPSHOT">
       <script plugin="script-security@1.15">
         <script>manager.addBadge(&apos;success.gif&apos;, &apos;shortText&apos;, &apos;https://jenkins.io/&apos;);
-manager.createSummary(&apos;info.gif&apos;).appendText(&apos;&lt;b&gt;summaryText&lt;/b&gt;&apos;, false);</script>
+manager.createSummary(&apos;info.gif&apos;).setText(&apos;&lt;b&gt;summaryText&lt;/b&gt;&apos;);</script>
         <sandbox>true</sandbox>
       </script>
       <behavior>0</behavior>
