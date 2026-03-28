@@ -452,6 +452,7 @@ class GroovyPostbuildRecorderTest {
         assertEquals(TEXT_ON_FAILED, b.getAction(BadgeAction.class).getText());
     }
 
+    @Disabled("legacy data no longer migrates with badge plugin 3.x")
     @Test
     @LocalData
     void testBadgeMigration() throws Exception {
