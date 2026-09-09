@@ -37,6 +37,6 @@ import com.jenkinsci.plugins.badge.action.BadgeSummaryAction;
 
     protected BadgeSummaryAction readResolve() {
         return new BadgeSummaryAction(
-                null, iconPath, textBuilder != null ? textBuilder.toString() : null, null, null, null);
+                null, iconPath, textBuilder != null ? textBuilder.toString() : null, null, null, null, null);
     }
 }

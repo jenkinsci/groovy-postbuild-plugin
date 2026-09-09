@@ -147,7 +147,7 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 
         @Whitelisted
         public void addShortText(String text) {
-            build.addAction(new BadgeAction(null, null, text, null, null, null));
+            build.addAction(new BadgeAction(null, null, text, null, null, null, null));
         }
 
         @Whitelisted
@@ -168,40 +168,52 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
                 }
             }
 
-            build.addAction(new BadgeAction(null, null, text, null, style, null));
+            build.addAction(new BadgeAction(null, null, text, null, style, null, null));
         }
 
         @Whitelisted
         public void addBadge(String icon, String text) {
-            build.addAction(new BadgeAction(null, icon, text, null, null, null));
+            build.addAction(new BadgeAction(null, icon, text, null, null, null, null));
         }
 
         @Whitelisted
         public void addBadge(String icon, String text, String link) {
-            build.addAction(new BadgeAction(null, icon, text, null, null, link));
+            build.addAction(new BadgeAction(null, icon, text, null, null, link, null));
         }
 
         @Whitelisted
         public void addInfoBadge(String text) {
             build.addAction(new BadgeAction(
-                    null, Ionicons.getIconClassName("information-circle"), text, null, "color: var(--blue)", null));
+                    null,
+                    Ionicons.getIconClassName("information-circle"),
+                    text,
+                    null,
+                    "color: var(--blue)",
+                    null,
+                    null));
         }
 
         @Whitelisted
         public void addWarningBadge(String text) {
             build.addAction(new BadgeAction(
-                    null, Ionicons.getIconClassName("warning"), text, null, "color: var(--warning-color)", null));
+                    null, Ionicons.getIconClassName("warning"), text, null, "color: var(--warning-color)", null, null));
         }
 
         @Whitelisted
         public void addErrorBadge(String text) {
             build.addAction(new BadgeAction(
-                    null, Ionicons.getIconClassName("remove-circle"), text, null, "color: var(--error-color)", null));
+                    null,
+                    Ionicons.getIconClassName("remove-circle"),
+                    text,
+                    null,
+                    "color: var(--error-color)",
+                    null,
+                    null));
         }
 
         @Whitelisted
         public void addHtmlBadge(String html) {
-            build.addAction(new BadgeAction(null, null, html, null, null, null));
+            build.addAction(new BadgeAction(null, null, html, null, null, null, null));
         }
 
         @Whitelisted
@@ -230,7 +242,7 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
         }
 
         public BadgeSummaryAction createSummary(String icon) {
-            BadgeSummaryAction action = new BadgeSummaryAction(null, icon, null, null, null, null);
+            BadgeSummaryAction action = new BadgeSummaryAction(null, icon, null, null, null, null, null);
             build.addAction(action);
             return action;
         }
