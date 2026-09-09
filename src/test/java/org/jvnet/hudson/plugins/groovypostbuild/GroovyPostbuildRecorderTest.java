@@ -667,6 +667,62 @@ class GroovyPostbuildRecorderTest {
         assertEquals(List.of("test2"), Lists.transform(b.getActions(BadgeAction.class), AbstractBadgeAction::getText));
     }
 
+    @Test
+    void testRemoveBadgesOnlyLeavesSummaries() throws Exception {
+        // removeBadgesOnly() is constrained to BadgeAction and must not touch BadgeSummaryAction
+        String template = "method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder$BadgeManager %s";
+        ScriptApproval.get().approveSignature(template.formatted("createSummary java.lang.String"));
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getPublishersList()
+                .add(new GroovyPostbuildRecorder(
+                        new SecureGroovyScript(
+                                """
+                                manager.addShortText('test1');
+                                manager.addShortText('test2');
+                                manager.createSummary('attribute.png');
+                                manager.removeBadgesOnly();
+                                """,
+                                true, // sandbox
+                                Collections.emptyList()),
+                        2, // behavior
+                        false // runForMatrixParent
+                        ));
+
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals(Collections.emptyList(), b.getActions(BadgeAction.class));
+        assertEquals(1, b.getActions(BadgeSummaryAction.class).size());
+    }
+
+    @Test
+    void testRemoveBadgesAlsoRemovesSummaries() throws Exception {
+        // Pins today's (surprising) behavior: removeBadges() filters on the shared
+        // AbstractBadgeAction superclass, so it removes summaries too, not just badges.
+        // If this is ever fixed to match its name, this test must be updated deliberately.
+        String template = "method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder$BadgeManager %s";
+        ScriptApproval.get().approveSignature(template.formatted("createSummary java.lang.String"));
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getPublishersList()
+                .add(new GroovyPostbuildRecorder(
+                        new SecureGroovyScript(
+                                """
+                                manager.addShortText('test1');
+                                manager.addShortText('test2');
+                                manager.createSummary('attribute.png');
+                                manager.removeBadges();
+                                """,
+                                true, // sandbox
+                                Collections.emptyList()),
+                        2, // behavior
+                        false // runForMatrixParent
+                        ));
+
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals(Collections.emptyList(), b.getActions(BadgeAction.class));
+        assertEquals(Collections.emptyList(), b.getActions(BadgeSummaryAction.class));
+    }
+
     @Disabled("badges plugin 3.x breaks compatibility for this use case, use Pipeline instead of freestyle")
     @Test
     void testRemoveSummary() throws Exception {
