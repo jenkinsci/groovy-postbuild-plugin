@@ -559,6 +559,53 @@ class GroovyPostbuildRecorderTest {
     }
 
     @Test
+    void testAddShortTextWithColorVariablePrefixTranslatesToCssCustomProperty() throws Exception {
+        // 'jenkins-!-color-<name>' must translate to the CSS custom property
+        // var(--<name>), not var(---<name>) with a stray extra hyphen.
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getPublishersList()
+                .add(new GroovyPostbuildRecorder(
+                        new SecureGroovyScript(
+                                "manager.addShortText('testing', 'jenkins-!-color-dark-indigo', null, null, null);",
+                                true, // sandbox
+                                Collections.emptyList()),
+                        2, // behavior
+                        false // runForMatrixParent
+                        ));
+
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+
+        String style = b.getAction(BadgeAction.class).getStyle();
+        assertThat(style, Matchers.containsString("var(--dark-indigo)"));
+        assertThat(style, Matchers.not(Matchers.containsString("var(---dark-indigo)")));
+    }
+
+    @Test
+    void testAddShortTextWithNullBorderColorEmitsWellFormedBorder() throws Exception {
+        // A null border colour must not leave a stray space before the
+        // semicolon (e.g. "border: 1px solid ;"), which browsers drop as
+        // malformed and which causes the border to disappear entirely.
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getPublishersList()
+                .add(new GroovyPostbuildRecorder(
+                        new SecureGroovyScript(
+                                "manager.addShortText('testing', null, null, '1px', null);",
+                                true, // sandbox
+                                Collections.emptyList()),
+                        2, // behavior
+                        false // runForMatrixParent
+                        ));
+
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+
+        String style = b.getAction(BadgeAction.class).getStyle();
+        assertThat(style, Matchers.containsString("border: 1px solid;"));
+        assertThat(style, Matchers.not(Matchers.containsString("solid ;")));
+    }
+
+    @Test
     void testAddHtmlBadge() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
 

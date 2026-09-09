@@ -153,14 +153,14 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
         @Whitelisted
         public void addShortText(String text, String color, String background, String border, String borderColor) {
             // translate old styling to new field
-            String style = "border: " + (border != null ? border : "") + " solid "
-                    + (borderColor != null ? borderColor : "") + ";";
+            String style = "border: " + (border != null ? border : "") + " solid"
+                    + (borderColor != null ? " " + borderColor : "") + ";";
             if (background != null) {
                 style += "background: " + background + ";";
             }
             if (color != null) {
-                if (color.startsWith("jenkins-!-color")) {
-                    style += "color: var(--" + color.replaceFirst("jenkins-!-color", "") + ");";
+                if (color.startsWith("jenkins-!-color-")) {
+                    style += "color: var(--" + color.replaceFirst("jenkins-!-color-", "") + ");";
                 } else if (color.startsWith("jenkins-!-")) {
                     style += "color: var(--" + color.replaceFirst("jenkins-!-", "") + ");";
                 } else {
