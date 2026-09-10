@@ -43,8 +43,17 @@ You can always use *approved methods*, but you can use *non-approved methods* on
 -   `addWarningBadge(text)` - puts a badge with ![](docs/images/warning.gif) warning icon and the given text.
 -   `addErrorBadge(text)` - puts a badge with ![](docs/images/error.gif) error icon and the given text.
 -   `addHtmlBadge(html)` - puts a badge with html source. Unsafe html codes will be removed.
--   `removeBadges()` - removes all badges from the current build. It is often used with `setBuildNumber`.
--   `removeBadge(index)` - removes the badge with the given index. It is often used with `setBuildNumber`.
+-   `removeBadges()` - removes all badges *and summaries* from the current build. Badges and summaries
+    are both represented as subclasses of the same base action class, and this method removes any action
+    of that base class, so it is not limited to badges despite its name. It is often used with `setBuildNumber`.
+    If you only want to remove badges and leave summaries alone, use `removeBadgesOnly()` instead.
+-   `removeBadge(index)` - removes the badge-or-summary with the given index, for the same reason described
+    for `removeBadges()`. It is often used with `setBuildNumber`. If you only want to remove a badge, use
+    `removeBadgeOnly(index)` instead.
+-   `removeBadgesOnly()` - removes only the badges from the current build, leaving any summaries untouched.
+-   `removeBadgeOnly(index)` - removes only the badge with the given index, leaving any summaries untouched.
+    Note that this index is into the badge-only list, so index 0 here is not necessarily the same action as
+    index 0 for `removeBadge(index)` when the build also has summaries.
 -   `addBadge(icon, text)` - puts a badge with the given icon and text.
     Provides the following icons:
 
