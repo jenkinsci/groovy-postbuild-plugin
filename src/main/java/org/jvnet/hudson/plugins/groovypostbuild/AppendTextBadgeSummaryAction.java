@@ -24,6 +24,7 @@
 package org.jvnet.hudson.plugins.groovypostbuild;
 
 import com.jenkinsci.plugins.badge.action.BadgeSummaryAction;
+import java.io.Serial;
 import java.util.Objects;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
@@ -77,6 +78,15 @@ import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
  * corrupting its icon, text, or link.
  */
 public class AppendTextBadgeSummaryAction extends BadgeSummaryAction {
+
+    // Real ObjectOutputStream serialization of instances of this class is load-bearing, not
+    // incidental: Pipeline's CPS interpreter persists a running program's local variables (see
+    // AppendTextBadgeSummaryActionConverter's Javadoc) with this class kept as itself. Without a
+    // fixed serialVersionUID, any later change to these fields changes the JVM-computed default,
+    // and a Pipeline whose checkpoint spans that plugin upgrade gets InvalidClassException on
+    // resume. Must stay stable across releases - do not remove or let it get recomputed.
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private String rawIcon;
     private String rawText;
