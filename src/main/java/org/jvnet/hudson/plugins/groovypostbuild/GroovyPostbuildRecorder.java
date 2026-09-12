@@ -308,7 +308,14 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
             }
         }
 
-        public AppendTextBadgeSummaryAction createSummary(String icon) {
+        // NOTE: declared return type is BadgeSummaryAction, not AppendTextBadgeSummaryAction,
+        // even though the object returned is always the latter. BadgeManager is public API
+        // (WorkflowManager.getValue hands it to Pipeline), and narrowing a public method's return
+        // type changes its descriptor with no bridge method: a plugin compiled against the old
+        // signature would get NoSuchMethodError. Groovy dispatches appendText(...) dynamically
+        // against the actual runtime object, so nothing about calling it from a script depends on
+        // the declared type here.
+        public BadgeSummaryAction createSummary(String icon) {
             AppendTextBadgeSummaryAction action =
                     new AppendTextBadgeSummaryAction(null, icon, null, null, null, null, null);
             build.addAction(action);
