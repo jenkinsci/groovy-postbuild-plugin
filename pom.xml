@@ -57,6 +57,13 @@
 
   <dependencies>
     <dependency>
+      <!-- AppendTextBadgeSummaryAction needs StringEscapeUtils; declared explicitly rather than
+           relying on the transitive path through matrix-project -> junit -> bootstrap5-api, which
+           is not guaranteed to survive a future dependency change in any of those plugins. -->
+      <groupId>io.jenkins.plugins</groupId>
+      <artifactId>commons-text-api</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.jenkins-ci.plugins</groupId>
       <artifactId>badge</artifactId>
     </dependency>
