@@ -838,4 +838,120 @@ class GroovyPostbuildRecorderTest {
 
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
     }
+
+    /**
+     * Extracts and XML-unescapes the text content of a single-line {@code <tag>...</tag>} element,
+     * bypassing getText()/getLink() entirely - those getters apply a markup formatter or a pattern
+     * filter respectively, neither of which is relevant to what was actually persisted.
+     */
+    private static String extractElement(String xml, String tag) {
+        String open = "<" + tag + ">";
+        String close = "</" + tag + ">";
+        int start = xml.indexOf(open);
+        if (start < 0) {
+            return null;
+        }
+        start += open.length();
+        int end = xml.indexOf(close, start);
+        return org.apache.commons.text.StringEscapeUtils.unescapeXml(xml.substring(start, end));
+    }
+
+    /**
+     * {@link AppendTextBadgeSummaryAction} must never be the class actually written to build.xml:
+     * an installation without this exact plugin-local class (a downgrade, or simply the day this
+     * deprecated shim is removed) would otherwise get CannotResolveClassException on every build
+     * that used it, and Jenkins would silently drop the summary. writeReplace() is what prevents
+     * that; this test proves it is honored by Jenkins' actual XStream setup (Run.XSTREAM2,
+     * RobustReflectionConverter included) rather than assuming XStream's general documentation
+     * applies unmodified, and proves the persisted fields are the raw values, not the transformed
+     * view getText()/getLink() return.
+     */
+    @Test
+    void testShimPersistsAsPlainBadgeSummaryAction() throws Exception {
+        AppendTextBadgeSummaryAction action =
+                new AppendTextBadgeSummaryAction(null, "exp.png", null, null, null, null, null);
+        action.appendText("ExpText", false, false, false, "Black");
+        action.setLink("example.com/not-a-recognized-scheme"); // getLink() would silently return null for this
+
+        String expectedRawText = "<font color=\"Black\">ExpText</font>";
+        String expectedRawLink = "example.com/not-a-recognized-scheme";
+
+        String xml = hudson.model.Run.XSTREAM2.toXML(action);
+
+        // (1) the class actually written to build.xml must not be this plugin's own class.
+        Object roundTripped = hudson.model.Run.XSTREAM2.fromXML(xml);
+        assertEquals("com.jenkinsci.plugins.badge.action.BadgeSummaryAction", roundTripped.getClass().getName());
+
+        // (2) the persisted <text>/<link> must be the RAW values, not getText()/getLink()'s
+        // transformed view (markup-formatter translation, backwards-compat icon rewriting, and
+        // getLink()'s silent drop of anything that fails its scheme check, respectively).
+        assertEquals(
+                expectedRawText,
+                extractElement(xml, "text"),
+                "writeReplace must persist the RAW text, not getText()'s translated view");
+        assertEquals(
+                expectedRawLink,
+                extractElement(xml, "link"),
+                "writeReplace must persist the RAW link, not getLink()'s filtered view");
+
+        // (3) round-tripping again from the already-persisted XML must reproduce the same raw
+        // values (i.e. the plain BadgeSummaryAction we replaced ourselves with round-trips using
+        // ordinary field reflection, with no further transformation).
+        String xml2 = hudson.model.Run.XSTREAM2.toXML(roundTripped);
+        assertEquals(expectedRawText, extractElement(xml2, "text"));
+        assertEquals(expectedRawLink, extractElement(xml2, "link"));
+    }
+
+    /**
+     * Simulates the shim class having been removed from a later plugin release (or a downgrade to
+     * a controller that never had it): the outer XML tag is the only place its FQCN appears, so
+     * replacing it with a name that resolves to nothing on this classpath reproduces exactly that
+     * situation. Deserialization must still succeed, purely via the resolves-to attribute
+     * writeReplace() causes XStream to write - proving old build.xml files stay readable forever,
+     * with no future maintainer action required on the day this shim is deleted.
+     */
+    /**
+     * testRemoveSummary/testRemoveSummaries run under RawHtmlMarkupFormatter, which sanitizes
+     * {@code <font color="...">} away entirely (it is backed by OWASP AntiSamy, and font/color
+     * are not in its default allowed-tags policy) before any assertion could see it - so neither
+     * of those tests exercises the 5-arg overload's tag construction at all. This test uses a
+     * trivial identity MarkupFormatter (write the input back unchanged) so the assertions see the
+     * literal markup appendText(...) actually produced: both wrappers plus color, in the exact
+     * (not properly re-nested) order badge 2.8 produced them, with the color escaped always and
+     * the text escaped only when requested.
+     */
+    @Test
+    void testAppendTextFiveArgOverloadProducesExactMarkup() throws Exception {
+        j.jenkins.setMarkupFormatter(new hudson.markup.MarkupFormatter() {
+            @Override
+            public void translate(String markup, java.io.Writer output) throws java.io.IOException {
+                output.write(markup);
+            }
+        });
+
+        AppendTextBadgeSummaryAction escaped =
+                new AppendTextBadgeSummaryAction(null, "escaped.png", null, null, null, null, null);
+        escaped.appendText("<script>", true, true, true, "a&b");
+        assertEquals("<b><i><font color=\"a&amp;b\">&lt;script&gt;</b></i></font>", escaped.getText());
+
+        AppendTextBadgeSummaryAction unescaped =
+                new AppendTextBadgeSummaryAction(null, "unescaped.png", null, null, null, null, null);
+        unescaped.appendText("<u>raw</u>", false, false, false, null);
+        assertEquals("<u>raw</u>", unescaped.getText());
+    }
+
+    @Test
+    void testShimSurvivesRemovalFromClasspath() throws Exception {
+        AppendTextBadgeSummaryAction action =
+                new AppendTextBadgeSummaryAction(null, "exp2.png", null, null, null, null, null);
+        action.appendText("ExpText2", false, false, false, "Black");
+        String xml = hudson.model.Run.XSTREAM2.toXML(action);
+
+        String simulated = xml.replace(
+                "org.jvnet.hudson.plugins.groovypostbuild.AppendTextBadgeSummaryAction",
+                "org.jvnet.hudson.plugins.groovypostbuild.ThisClassDoesNotExistAnymore");
+        Object result = hudson.model.Run.XSTREAM2.fromXML(simulated);
+        assertEquals("com.jenkinsci.plugins.badge.action.BadgeSummaryAction", result.getClass().getName());
+        assertEquals("<font color=\"Black\">ExpText2</font>", extractElement(simulated, "text"));
+    }
 }
