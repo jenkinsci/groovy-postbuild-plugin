@@ -37,12 +37,53 @@ import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
  * badge 3.x exposes no other way to read back the text already set. {@code getText()} returns the
  * markup-formatter-translated value (or the raw value when blank), so appended text is layered onto
  * that translated value, same as it always was.
+ *
+ * <p>This class is deliberately not persisted under its own name: {@link #writeReplace()} substitutes
+ * a plain {@link BadgeSummaryAction} at serialization time, so {@code build.xml} never records this
+ * plugin-local class name. Without that, every build a script summary was written to would become
+ * unreadable ({@code CannotResolveClassException}, and Jenkins silently drops the action) on any
+ * installation without this exact class - a downgrade, or simply the day this deprecated shim is
+ * removed, which is the entire point of a deprecation path. {@code rawIcon}/{@code rawText}/{@code
+ * rawLink} exist because {@link #writeReplace()} must not use {@code getIcon()}/{@code getText()}/
+ * {@code getLink()}: those getters return a transformed view (backwards-compatible icon name
+ * rewriting, markup-formatter translation, and silently dropping a link that fails a pattern check,
+ * respectively), not the value that was actually stored, and baking the transformed view into the
+ * "raw" field of the replacement would corrupt the badge on every subsequent read.
  */
 public class AppendTextBadgeSummaryAction extends BadgeSummaryAction {
+
+    private transient String rawIcon;
+    private transient String rawText;
+    private transient String rawLink;
 
     public AppendTextBadgeSummaryAction(
             String id, String icon, String text, String cssClass, String style, String link, String target) {
         super(id, icon, text, cssClass, style, link, target);
+        this.rawIcon = icon;
+        this.rawText = text;
+        this.rawLink = link;
+    }
+
+    @Override
+    public void setIcon(String icon) {
+        super.setIcon(icon);
+        this.rawIcon = icon;
+    }
+
+    @Override
+    public void setText(String text) {
+        super.setText(text);
+        this.rawText = text;
+    }
+
+    @Override
+    public void setLink(String link) {
+        super.setLink(link);
+        this.rawLink = link;
+    }
+
+    private Object writeReplace() {
+        return new BadgeSummaryAction(getId(), rawIcon, rawText, getCssClass(), getStyle(), rawLink, getTarget());
     }
 
     @Whitelisted
