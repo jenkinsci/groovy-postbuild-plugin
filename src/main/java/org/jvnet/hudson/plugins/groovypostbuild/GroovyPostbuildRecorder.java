@@ -308,8 +308,9 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
             }
         }
 
-        public BadgeSummaryAction createSummary(String icon) {
-            BadgeSummaryAction action = new BadgeSummaryAction(null, icon, null, null, null, null, null);
+        public AppendTextBadgeSummaryAction createSummary(String icon) {
+            AppendTextBadgeSummaryAction action =
+                    new AppendTextBadgeSummaryAction(null, icon, null, null, null, null, null);
             build.addAction(action);
             return action;
         }
