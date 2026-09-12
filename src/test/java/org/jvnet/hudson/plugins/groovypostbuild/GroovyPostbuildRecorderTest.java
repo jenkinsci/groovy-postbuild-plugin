@@ -516,6 +516,39 @@ class GroovyPostbuildRecorderTest {
         }
     }
 
+    /**
+     * GroovyPostbuildActionMigrator.readResolve() (used to migrate build.xml written by
+     * groovy-postbuild 2.3.1- via the GroovyPostbuildAction compatibility alias) checks
+     * {@code color.startsWith("jenkins-!-color")}, missing the trailing hyphen that its own
+     * replaceFirst("jenkins-!-color-", ...) requires - the exact bug PR #200 fixed at
+     * GroovyPostbuildRecorder's addShortText(String, String, String, String, String). A color
+     * value that starts with "jenkins-!-color" but is not actually "jenkins-!-color-<something>"
+     * (nothing stops a script from having set one) takes the first branch, replaceFirst matches
+     * nothing, and the style silently becomes "color: var(--jenkins-!-colorful);" - a CSS custom
+     * property nobody defined, so the badge loses its color instead of getting it.
+     */
+    @Test
+    void testActionMigratorColorPrefixNeedsTrailingHyphen() throws Exception {
+        assertEquals(
+                "color: var(--colorful);",
+                migrateActionColor("jenkins-!-colorful"),
+                "a color starting with \"jenkins-!-color\" but not \"jenkins-!-color-\" must fall "
+                        + "through to the generic jenkins-!- prefix, not match the more specific "
+                        + "branch and then fail to strip it");
+        assertEquals(
+                "color: var(--dark-indigo);",
+                migrateActionColor("jenkins-!-color-dark-indigo"),
+                "the well-formed jenkins-!-color-<name> case must still work");
+    }
+
+    private String migrateActionColor(String color) throws Exception {
+        String xml = "<org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildAction>\n"
+                + "  <color>" + color + "</color>\n"
+                + "</org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildAction>";
+        Object migrated = hudson.model.Run.XSTREAM2.fromXML(xml);
+        return ((BadgeAction) migrated).getStyle();
+    }
+
     @Test
     void testAddShortText() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();
@@ -860,11 +893,12 @@ class GroovyPostbuildRecorderTest {
      * {@link AppendTextBadgeSummaryAction} must never be the class actually written to build.xml:
      * an installation without this exact plugin-local class (a downgrade, or simply the day this
      * deprecated shim is removed) would otherwise get CannotResolveClassException on every build
-     * that used it, and Jenkins would silently drop the summary. writeReplace() is what prevents
-     * that; this test proves it is honored by Jenkins' actual XStream setup (Run.XSTREAM2,
-     * RobustReflectionConverter included) rather than assuming XStream's general documentation
-     * applies unmodified, and proves the persisted fields are the raw values, not the transformed
-     * view getText()/getLink() return.
+     * that used it, and Jenkins would silently drop the summary.
+     * {@link AppendTextBadgeSummaryActionConverter} is what prevents that; this test proves it is
+     * honored by Jenkins' actual XStream setup (Run.XSTREAM2, and the registration in
+     * GroovyPostbuildDescriptor.addAliases() included) rather than assuming a converter
+     * registered this way behaves as documented, and proves the persisted fields are the raw
+     * values, not the transformed view getText()/getLink() return.
      */
     @Test
     void testShimPersistsAsPlainBadgeSummaryAction() throws Exception {
@@ -890,11 +924,11 @@ class GroovyPostbuildRecorderTest {
         assertEquals(
                 expectedRawText,
                 extractElement(xml, "text"),
-                "writeReplace must persist the RAW text, not getText()'s translated view");
+                "the converter must persist the RAW text, not getText()'s translated view");
         assertEquals(
                 expectedRawLink,
                 extractElement(xml, "link"),
-                "writeReplace must persist the RAW link, not getLink()'s filtered view");
+                "the converter must persist the RAW link, not getLink()'s filtered view");
 
         // (3) round-tripping again from the already-persisted XML must reproduce the same raw
         // values (i.e. the plain BadgeSummaryAction we replaced ourselves with round-trips using
@@ -905,13 +939,38 @@ class GroovyPostbuildRecorderTest {
     }
 
     /**
-     * Simulates the shim class having been removed from a later plugin release (or a downgrade to
-     * a controller that never had it): the outer XML tag is the only place its FQCN appears, so
-     * replacing it with a name that resolves to nothing on this classpath reproduces exactly that
-     * situation. Deserialization must still succeed, purely via the resolves-to attribute
-     * writeReplace() causes XStream to write - proving old build.xml files stay readable forever,
-     * with no future maintainer action required on the day this shim is deleted.
+     * Pipeline's CPS interpreter persists a running program's local variables - including
+     * whatever a script assigned {@code manager.createSummary(...)} to - with plain Java
+     * serialization ({@code ObjectOutputStream}/{@code ObjectInputStream}) across every
+     * durability checkpoint, not with {@code Run.XSTREAM2}. A {@code writeReplace()}-based
+     * substitution would be honored here too, silently turning the shim into a plain
+     * {@code BadgeSummaryAction} the moment a Pipeline build resumed after a controller restart,
+     * and any further {@code appendText(...)} call on it would throw. This test proves the
+     * {@link AppendTextBadgeSummaryActionConverter}-based fix does not have that problem: plain
+     * Java serialization is a completely different code path that never consults registered
+     * XStream converters, so the shim must come back as itself, appendText and all.
      */
+    @Test
+    void testShimSurvivesJavaSerializationForPipeline() throws Exception {
+        AppendTextBadgeSummaryAction action =
+                new AppendTextBadgeSummaryAction(null, "pipeline.png", null, null, null, null, null);
+        action.appendText("start");
+
+        java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+        try (java.io.ObjectOutputStream out = new java.io.ObjectOutputStream(bytes)) {
+            out.writeObject(action);
+        }
+        Object restored;
+        try (java.io.ObjectInputStream in =
+                new java.io.ObjectInputStream(new java.io.ByteArrayInputStream(bytes.toByteArray()))) {
+            restored = in.readObject();
+        }
+
+        assertEquals(AppendTextBadgeSummaryAction.class, restored.getClass());
+        ((AppendTextBadgeSummaryAction) restored).appendText("end");
+        assertEquals("startend", ((AppendTextBadgeSummaryAction) restored).getText());
+    }
+
     /**
      * testRemoveSummary/testRemoveSummaries run under RawHtmlMarkupFormatter, which sanitizes
      * {@code <font color="...">} away entirely (it is backed by OWASP AntiSamy, and font/color
@@ -942,6 +1001,15 @@ class GroovyPostbuildRecorderTest {
         assertEquals("<u>raw</u>", unescaped.getText());
     }
 
+    /**
+     * Simulates the shim class having been removed from a later plugin release (or a downgrade to
+     * a controller that never had it): the outer XML tag is the only place its FQCN appears, so
+     * replacing it with a name that resolves to nothing on this classpath reproduces exactly that
+     * situation. Deserialization must still succeed, purely via the resolves-to attribute
+     * {@link AppendTextBadgeSummaryActionConverter} causes XStream to write - proving old
+     * build.xml files stay readable forever, with no future maintainer action required on the day
+     * this shim is deleted.
+     */
     @Test
     void testShimSurvivesRemovalFromClasspath() throws Exception {
         AppendTextBadgeSummaryAction action =
