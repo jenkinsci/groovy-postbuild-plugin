@@ -880,7 +880,9 @@ class GroovyPostbuildRecorderTest {
 
         // (1) the class actually written to build.xml must not be this plugin's own class.
         Object roundTripped = hudson.model.Run.XSTREAM2.fromXML(xml);
-        assertEquals("com.jenkinsci.plugins.badge.action.BadgeSummaryAction", roundTripped.getClass().getName());
+        assertEquals(
+                "com.jenkinsci.plugins.badge.action.BadgeSummaryAction",
+                roundTripped.getClass().getName());
 
         // (2) the persisted <text>/<link> must be the RAW values, not getText()/getLink()'s
         // transformed view (markup-formatter translation, backwards-compat icon rewriting, and
@@ -951,7 +953,9 @@ class GroovyPostbuildRecorderTest {
                 "org.jvnet.hudson.plugins.groovypostbuild.AppendTextBadgeSummaryAction",
                 "org.jvnet.hudson.plugins.groovypostbuild.ThisClassDoesNotExistAnymore");
         Object result = hudson.model.Run.XSTREAM2.fromXML(simulated);
-        assertEquals("com.jenkinsci.plugins.badge.action.BadgeSummaryAction", result.getClass().getName());
+        assertEquals(
+                "com.jenkinsci.plugins.badge.action.BadgeSummaryAction",
+                result.getClass().getName());
         assertEquals("<font color=\"Black\">ExpText2</font>", extractElement(simulated, "text"));
     }
 }
