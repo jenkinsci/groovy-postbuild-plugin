@@ -47,7 +47,7 @@ import com.jenkinsci.plugins.badge.action.BadgeAction;
             style += "background: " + background + ";";
         }
         if (color != null) {
-            if (color.startsWith("jenkins-!-color")) {
+            if (color.startsWith("jenkins-!-color-")) {
                 style += "color: var(--" + color.replaceFirst("jenkins-!-color-", "") + ");";
             } else if (color.startsWith("jenkins-!-")) {
                 style += "color: var(--" + color.replaceFirst("jenkins-!-", "") + ");";
