@@ -451,7 +451,6 @@ class GroovyPostbuildRecorderTest {
         assertEquals(TEXT_ON_FAILED, b.getAction(BadgeAction.class).getText());
     }
 
-    @Disabled("legacy data no longer migrates with badge plugin 3.x")
     @Test
     @LocalData
     void testBadgeMigration() throws Exception {
@@ -780,8 +779,8 @@ class GroovyPostbuildRecorderTest {
         p.getPublishersList()
                 .add(new GroovyPostbuildRecorder(
                         new SecureGroovyScript("""
-                                manager.createSummary('attribute.png').setText('Test1');
-                                manager.createSummary('attribute.png').setText('Test2');
+                                manager.createSummary('attribute.png').appendText('Test1', false, false, false, 'Black');
+                                manager.createSummary('attribute.png').appendText('Test2', false, false, false, 'Black');
                                 manager.removeSummary(0);
                                 """, true, Collections.emptyList()),
                         2, // behavior
@@ -793,7 +792,6 @@ class GroovyPostbuildRecorderTest {
                 Lists.transform(b.getActions(BadgeSummaryAction.class), AbstractBadgeAction::getText));
     }
 
-    @Disabled("badges plugin 3.x breaks compatibility for this use case, use Pipeline instead of freestyle")
     @Test
     void testRemoveSummaries() throws Exception {
         String template = "method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder$BadgeManager %s";
@@ -803,7 +801,7 @@ class GroovyPostbuildRecorderTest {
         p.getPublishersList()
                 .add(new GroovyPostbuildRecorder(
                         new SecureGroovyScript("""
-                                manager.createSummary('attribute.png').setText('Test1');
+                                manager.createSummary('attribute.png').appendText('Test1', false, false, false, 'Black');
                                 manager.removeSummaries();
                                 """, true, Collections.emptyList()),
                         2, // behavior
