@@ -39,26 +39,44 @@ import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
  * markup-formatter-translated value (or the raw value when blank), so appended text is layered onto
  * that translated value, same as it always was.
  *
- * <p>This class is deliberately not persisted under its own name: {@link #writeReplace()} substitutes
- * a plain {@link BadgeSummaryAction} at serialization time, so {@code build.xml} never records this
- * plugin-local class name. Without that, every build a script summary was written to would become
- * unreadable ({@code CannotResolveClassException}, and Jenkins silently drops the action) on any
- * installation without this exact class - a downgrade, or simply the day this deprecated shim is
- * removed, which is the entire point of a deprecation path. {@code rawIcon}/{@code rawText}/{@code
- * rawLink} exist because {@link #writeReplace()} must not use {@code getIcon()}/{@code getText()}/
- * {@code getLink()}: those getters return a transformed view (backwards-compatible icon name
- * rewriting, markup-formatter translation, and silently dropping a link that fails a pattern check,
+ * <p>{@link #writeReplace()} substitutes a plain {@link BadgeSummaryAction} at serialization time,
+ * so the fields written to {@code build.xml} are the plain badge action's, not this class's own
+ * extra state. The outer XML element is still tagged with this class's fully qualified name - that
+ * is how XStream remembers this is what actually ran when the build happened - but it carries a
+ * {@code resolves-to} attribute pointing at {@code BadgeSummaryAction}. XStream's
+ * {@code HierarchicalStreams.readClassType()} consults {@code resolves-to} before ever trying to
+ * resolve the element name to a real class, so the element stays readable even after this class is
+ * gone: on a downgrade to a controller that never had it, or the day this deprecated shim is
+ * removed, which is the entire point of a deprecation path. Verified empirically, not assumed:
+ * renaming the outer tag to a class that exists nowhere on the classpath still deserializes
+ * correctly, purely from {@code resolves-to}.
+ *
+ * <p>{@code rawIcon}/{@code rawText}/{@code rawLink} shadow the values actually passed to the
+ * constructor and to {@link #setIcon}/{@link #setText}/{@link #setLink}, because {@link
+ * #writeReplace()} must not read them back through {@code getIcon()}/{@code getText()}/{@code
+ * getLink()}: those getters return a transformed view (backwards-compatible icon name rewriting,
+ * markup-formatter translation, and silently dropping a link that fails a pattern check,
  * respectively), not the value that was actually stored, and baking the transformed view into the
- * "raw" field of the replacement would corrupt the badge on every subsequent read.
+ * "raw" field of the replacement would corrupt the badge on every subsequent read. These fields do
+ * not need to be {@code transient} and there is no {@code readResolve()}: {@link #writeReplace()}
+ * means an instance of this class is never itself what gets written to XML, so nothing here is ever
+ * persisted regardless of the {@code transient} keyword, and the question of restoring them on
+ * deserialization does not arise for any object this class itself produced. The one case that does
+ * not round-trip is a shim element authored or migrated some other way - with badge's own fields
+ * but none of these three - since the superclass's real values are then reachable only through the
+ * same transforming getters this class must not launder as "raw"; deliberately, that leaves the
+ * shadow fields null rather than fabricating a value, so a save before the next
+ * {@code appendText}/{@code setText}/{@code setIcon}/{@code setLink} call on such an object would
+ * persist an empty badge instead of silently corrupting its icon, text, or link.
  */
 public class AppendTextBadgeSummaryAction extends BadgeSummaryAction {
 
     @Serial
     private static final long serialVersionUID = 1L;
 
-    private transient String rawIcon;
-    private transient String rawText;
-    private transient String rawLink;
+    private String rawIcon;
+    private String rawText;
+    private String rawLink;
 
     public AppendTextBadgeSummaryAction(
             String id, String icon, String text, String cssClass, String style, String link, String target) {
@@ -88,30 +106,6 @@ public class AppendTextBadgeSummaryAction extends BadgeSummaryAction {
 
     private Object writeReplace() {
         return new BadgeSummaryAction(getId(), rawIcon, rawText, getCssClass(), getStyle(), rawLink, getTarget());
-    }
-
-    /**
-     * Best-effort recovery of the raw* shadow fields for the one path that can leave them null:
-     * XStream's reflection-based field population sets {@code icon}/{@code text}/{@code link}
-     * directly and never calls the setter overrides above. In practice this class is never itself
-     * what gets deserialized - writeReplace() always substitutes a plain BadgeSummaryAction before
-     * that could happen - so this only guards against something deserializing a literal
-     * AppendTextBadgeSummaryAction element directly (hand-authored XML, a data migration test
-     * fixture). Falls back to the same getters writeReplace() otherwise avoids, since there is no
-     * other way to recover a value that was never captured through the setters.
-     */
-    @Serial
-    private Object readResolve() {
-        if (rawIcon == null) {
-            rawIcon = getIcon();
-        }
-        if (rawText == null) {
-            rawText = getText();
-        }
-        if (rawLink == null) {
-            rawLink = getLink();
-        }
-        return this;
     }
 
     @Whitelisted
