@@ -24,6 +24,7 @@
 package org.jvnet.hudson.plugins.groovypostbuild;
 
 import com.jenkinsci.plugins.badge.action.BadgeSummaryAction;
+import java.io.Serial;
 import java.util.Objects;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
@@ -51,6 +52,9 @@ import org.jenkinsci.plugins.scriptsecurity.sandbox.whitelists.Whitelisted;
  * "raw" field of the replacement would corrupt the badge on every subsequent read.
  */
 public class AppendTextBadgeSummaryAction extends BadgeSummaryAction {
+
+    @Serial
+    private static final long serialVersionUID = 1L;
 
     private transient String rawIcon;
     private transient String rawText;
@@ -84,6 +88,30 @@ public class AppendTextBadgeSummaryAction extends BadgeSummaryAction {
 
     private Object writeReplace() {
         return new BadgeSummaryAction(getId(), rawIcon, rawText, getCssClass(), getStyle(), rawLink, getTarget());
+    }
+
+    /**
+     * Best-effort recovery of the raw* shadow fields for the one path that can leave them null:
+     * XStream's reflection-based field population sets {@code icon}/{@code text}/{@code link}
+     * directly and never calls the setter overrides above. In practice this class is never itself
+     * what gets deserialized - writeReplace() always substitutes a plain BadgeSummaryAction before
+     * that could happen - so this only guards against something deserializing a literal
+     * AppendTextBadgeSummaryAction element directly (hand-authored XML, a data migration test
+     * fixture). Falls back to the same getters writeReplace() otherwise avoids, since there is no
+     * other way to recover a value that was never captured through the setters.
+     */
+    @Serial
+    private Object readResolve() {
+        if (rawIcon == null) {
+            rawIcon = getIcon();
+        }
+        if (rawText == null) {
+            rawText = getText();
+        }
+        if (rawLink == null) {
+            rawLink = getLink();
+        }
+        return this;
     }
 
     @Whitelisted
