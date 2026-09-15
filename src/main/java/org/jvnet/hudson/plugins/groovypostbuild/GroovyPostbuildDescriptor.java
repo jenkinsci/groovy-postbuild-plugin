@@ -23,7 +23,7 @@
  */
 package org.jvnet.hudson.plugins.groovypostbuild;
 
-import com.jenkinsci.plugins.badge.action.BadgeAction;
+import com.thoughtworks.xstream.XStream;
 import hudson.Extension;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
@@ -86,11 +86,18 @@ public class GroovyPostbuildDescriptor extends BuildStepDescriptor<Publisher> {
 
     @Initializer(before = InitMilestone.PLUGINS_STARTED)
     public static void addAliases() {
-        // migration from groovy-postbuild 2.3.1- to badge-plugin
+        // migration from groovy-postbuild 2.3.1 to badge-plugin
         Run.XSTREAM2.addCompatibilityAlias(
-                "org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildAction", BadgeAction.class);
+                "org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildAction", GroovyPostbuildActionMigrator.class);
         Run.XSTREAM2.addCompatibilityAlias(
                 "org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildSummaryAction",
                 GroovyPostbuildSummaryActionMigrator.class);
+
+        // AppendTextBadgeSummaryAction persists as a plain BadgeSummaryAction (see its own
+        // Javadoc for why this is a Converter and not a writeReplace()).
+        Run.XSTREAM2.registerConverter(
+                new AppendTextBadgeSummaryActionConverter(
+                        Run.XSTREAM2.getMapper(), Run.XSTREAM2.getReflectionProvider()),
+                XStream.PRIORITY_VERY_HIGH);
     }
 }

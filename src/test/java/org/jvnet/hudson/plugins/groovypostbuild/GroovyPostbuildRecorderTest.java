@@ -52,7 +52,6 @@ import org.hamcrest.Matchers;
 import org.jenkinsci.plugins.scriptsecurity.sandbox.groovy.SecureGroovyScript;
 import org.jenkinsci.plugins.scriptsecurity.scripts.ScriptApproval;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.jvnet.hudson.test.FailureBuilder;
 import org.jvnet.hudson.test.Issue;
@@ -185,7 +184,7 @@ class GroovyPostbuildRecorderTest {
      * @throws Exception
      */
     @Test
-    void testBehaviorNotAffectWithUnstableBuildSuceedingScript() throws Exception {
+    void testBehaviorNotAffectWithUnstableBuildSucceedingScript() throws Exception {
         List<Integer> behaviors = Arrays.asList(0, 1, 2);
         for (int behavior : behaviors) {
             FreeStyleProject p = j.createFreeStyleProject();
@@ -213,7 +212,7 @@ class GroovyPostbuildRecorderTest {
      * @throws Exception
      */
     @Test
-    void testBehaviorNotAffectWithFailingBuildSuceedingScript() throws Exception {
+    void testBehaviorNotAffectWithFailingBuildSucceedingScript() throws Exception {
         List<Integer> behaviors = Arrays.asList(0, 1, 2);
         for (int behavior : behaviors) {
             FreeStyleProject p = j.createFreeStyleProject();
@@ -452,7 +451,6 @@ class GroovyPostbuildRecorderTest {
         assertEquals(TEXT_ON_FAILED, b.getAction(BadgeAction.class).getText());
     }
 
-    @Disabled("legacy data no longer migrates with badge plugin 3.x")
     @Test
     @LocalData
     void testBadgeMigration() throws Exception {
@@ -516,6 +514,39 @@ class GroovyPostbuildRecorderTest {
             }
             assertEquals("<b>summaryText</b>", badgeSummaryAction.getText());
         }
+    }
+
+    /**
+     * GroovyPostbuildActionMigrator.readResolve() (used to migrate build.xml written by
+     * groovy-postbuild 2.3.1- via the GroovyPostbuildAction compatibility alias) checks
+     * {@code color.startsWith("jenkins-!-color")}, missing the trailing hyphen that its own
+     * replaceFirst("jenkins-!-color-", ...) requires - the exact bug PR #200 fixed at
+     * GroovyPostbuildRecorder's addShortText(String, String, String, String, String). A color
+     * value that starts with "jenkins-!-color" but is not actually "jenkins-!-color-<something>"
+     * (nothing stops a script from having set one) takes the first branch, replaceFirst matches
+     * nothing, and the style silently becomes "color: var(--jenkins-!-colorful);" - a CSS custom
+     * property nobody defined, so the badge loses its color instead of getting it.
+     */
+    @Test
+    void testActionMigratorColorPrefixNeedsTrailingHyphen() throws Exception {
+        assertEquals(
+                "color: var(--colorful);",
+                migrateActionColor("jenkins-!-colorful"),
+                "a color starting with \"jenkins-!-color\" but not \"jenkins-!-color-\" must fall "
+                        + "through to the generic jenkins-!- prefix, not match the more specific "
+                        + "branch and then fail to strip it");
+        assertEquals(
+                "color: var(--dark-indigo);",
+                migrateActionColor("jenkins-!-color-dark-indigo"),
+                "the well-formed jenkins-!-color-<name> case must still work");
+    }
+
+    private String migrateActionColor(String color) throws Exception {
+        String xml = "<org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildAction>\n"
+                + "  <color>" + color + "</color>\n"
+                + "</org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildAction>";
+        Object migrated = hudson.model.Run.XSTREAM2.fromXML(xml);
+        return ((BadgeAction) migrated).getStyle();
     }
 
     @Test
@@ -770,7 +801,6 @@ class GroovyPostbuildRecorderTest {
         assertEquals(Collections.emptyList(), b.getActions(BadgeSummaryAction.class));
     }
 
-    @Disabled("badges plugin 3.x breaks compatibility for this use case, use Pipeline instead of freestyle")
     @Test
     void testRemoveSummary() throws Exception {
         j.jenkins.setMarkupFormatter(RawHtmlMarkupFormatter.INSTANCE);
@@ -795,7 +825,6 @@ class GroovyPostbuildRecorderTest {
                 Lists.transform(b.getActions(BadgeSummaryAction.class), AbstractBadgeAction::getText));
     }
 
-    @Disabled("badges plugin 3.x breaks compatibility for this use case, use Pipeline instead of freestyle")
     @Test
     void testRemoveSummaries() throws Exception {
         String template = "method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder$BadgeManager %s";
@@ -841,5 +870,160 @@ class GroovyPostbuildRecorderTest {
         QueueItemAuthenticatorConfiguration.get().getAuthenticators().add(authenticator);
 
         j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+    }
+
+    /**
+     * Extracts and XML-unescapes the text content of a single-line {@code <tag>...</tag>} element,
+     * bypassing getText()/getLink() entirely - those getters apply a markup formatter or a pattern
+     * filter respectively, neither of which is relevant to what was actually persisted.
+     */
+    private static String extractElement(String xml, String tag) {
+        String open = "<" + tag + ">";
+        String close = "</" + tag + ">";
+        int start = xml.indexOf(open);
+        if (start < 0) {
+            return null;
+        }
+        start += open.length();
+        int end = xml.indexOf(close, start);
+        return org.apache.commons.text.StringEscapeUtils.unescapeXml(xml.substring(start, end));
+    }
+
+    /**
+     * {@link AppendTextBadgeSummaryAction} must never be the class actually written to build.xml:
+     * an installation without this exact plugin-local class (a downgrade, or simply the day this
+     * deprecated shim is removed) would otherwise get CannotResolveClassException on every build
+     * that used it, and Jenkins would silently drop the summary.
+     * {@link AppendTextBadgeSummaryActionConverter} is what prevents that; this test proves it is
+     * honored by Jenkins' actual XStream setup (Run.XSTREAM2, and the registration in
+     * GroovyPostbuildDescriptor.addAliases() included) rather than assuming a converter
+     * registered this way behaves as documented, and proves the persisted fields are the raw
+     * values, not the transformed view getText()/getLink() return.
+     */
+    @Test
+    void testShimPersistsAsPlainBadgeSummaryAction() throws Exception {
+        AppendTextBadgeSummaryAction action =
+                new AppendTextBadgeSummaryAction(null, "exp.png", null, null, null, null, null);
+        action.appendText("ExpText", false, false, false, "Black");
+        action.setLink("example.com/not-a-recognized-scheme"); // getLink() would silently return null for this
+
+        String expectedRawText = "<font color=\"Black\">ExpText</font>";
+        String expectedRawLink = "example.com/not-a-recognized-scheme";
+
+        String xml = hudson.model.Run.XSTREAM2.toXML(action);
+
+        // (1) the class actually written to build.xml must not be this plugin's own class.
+        Object roundTripped = hudson.model.Run.XSTREAM2.fromXML(xml);
+        assertEquals(
+                "com.jenkinsci.plugins.badge.action.BadgeSummaryAction",
+                roundTripped.getClass().getName());
+
+        // (2) the persisted <text>/<link> must be the RAW values, not getText()/getLink()'s
+        // transformed view (markup-formatter translation, backwards-compat icon rewriting, and
+        // getLink()'s silent drop of anything that fails its scheme check, respectively).
+        assertEquals(
+                expectedRawText,
+                extractElement(xml, "text"),
+                "the converter must persist the RAW text, not getText()'s translated view");
+        assertEquals(
+                expectedRawLink,
+                extractElement(xml, "link"),
+                "the converter must persist the RAW link, not getLink()'s filtered view");
+
+        // (3) round-tripping again from the already-persisted XML must reproduce the same raw
+        // values (i.e. the plain BadgeSummaryAction we replaced ourselves with round-trips using
+        // ordinary field reflection, with no further transformation).
+        String xml2 = hudson.model.Run.XSTREAM2.toXML(roundTripped);
+        assertEquals(expectedRawText, extractElement(xml2, "text"));
+        assertEquals(expectedRawLink, extractElement(xml2, "link"));
+    }
+
+    /**
+     * Pipeline's CPS interpreter persists a running program's local variables - including
+     * whatever a script assigned {@code manager.createSummary(...)} to - with plain Java
+     * serialization ({@code ObjectOutputStream}/{@code ObjectInputStream}) across every
+     * durability checkpoint, not with {@code Run.XSTREAM2}. A {@code writeReplace()}-based
+     * substitution would be honored here too, silently turning the shim into a plain
+     * {@code BadgeSummaryAction} the moment a Pipeline build resumed after a controller restart,
+     * and any further {@code appendText(...)} call on it would throw. This test proves the
+     * {@link AppendTextBadgeSummaryActionConverter}-based fix does not have that problem: plain
+     * Java serialization is a completely different code path that never consults registered
+     * XStream converters, so the shim must come back as itself, appendText and all.
+     */
+    @Test
+    void testShimSurvivesJavaSerializationForPipeline() throws Exception {
+        AppendTextBadgeSummaryAction action =
+                new AppendTextBadgeSummaryAction(null, "pipeline.png", null, null, null, null, null);
+        action.appendText("start");
+
+        java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+        try (java.io.ObjectOutputStream out = new java.io.ObjectOutputStream(bytes)) {
+            out.writeObject(action);
+        }
+        Object restored;
+        try (java.io.ObjectInputStream in =
+                new java.io.ObjectInputStream(new java.io.ByteArrayInputStream(bytes.toByteArray()))) {
+            restored = in.readObject();
+        }
+
+        assertEquals(AppendTextBadgeSummaryAction.class, restored.getClass());
+        ((AppendTextBadgeSummaryAction) restored).appendText("end");
+        assertEquals("startend", ((AppendTextBadgeSummaryAction) restored).getText());
+    }
+
+    /**
+     * testRemoveSummary/testRemoveSummaries run under RawHtmlMarkupFormatter, which sanitizes
+     * {@code <font color="...">} away entirely (it is backed by OWASP AntiSamy, and font/color
+     * are not in its default allowed-tags policy) before any assertion could see it - so neither
+     * of those tests exercises the 5-arg overload's tag construction at all. This test uses a
+     * trivial identity MarkupFormatter (write the input back unchanged) so the assertions see the
+     * literal markup appendText(...) actually produced: both wrappers plus color, in the exact
+     * (not properly re-nested) order badge 2.8 produced them, with the color escaped always and
+     * the text escaped only when requested.
+     */
+    @Test
+    void testAppendTextFiveArgOverloadProducesExactMarkup() throws Exception {
+        j.jenkins.setMarkupFormatter(new hudson.markup.MarkupFormatter() {
+            @Override
+            public void translate(String markup, java.io.Writer output) throws java.io.IOException {
+                output.write(markup);
+            }
+        });
+
+        AppendTextBadgeSummaryAction escaped =
+                new AppendTextBadgeSummaryAction(null, "escaped.png", null, null, null, null, null);
+        escaped.appendText("<script>", true, true, true, "a&b");
+        assertEquals("<b><i><font color=\"a&amp;b\">&lt;script&gt;</b></i></font>", escaped.getText());
+
+        AppendTextBadgeSummaryAction unescaped =
+                new AppendTextBadgeSummaryAction(null, "unescaped.png", null, null, null, null, null);
+        unescaped.appendText("<u>raw</u>", false, false, false, null);
+        assertEquals("<u>raw</u>", unescaped.getText());
+    }
+
+    /**
+     * Simulates the shim class having been removed from a later plugin release (or a downgrade to
+     * a controller that never had it): the outer XML tag is the only place its FQCN appears, so
+     * replacing it with a name that resolves to nothing on this classpath reproduces exactly that
+     * situation. Deserialization must still succeed, purely via the resolves-to attribute
+     * {@link AppendTextBadgeSummaryActionConverter} causes XStream to write - proving old
+     * build.xml files stay readable forever, with no future maintainer action required on the day
+     * this shim is deleted.
+     */
+    @Test
+    void testShimSurvivesRemovalFromClasspath() throws Exception {
+        AppendTextBadgeSummaryAction action =
+                new AppendTextBadgeSummaryAction(null, "exp2.png", null, null, null, null, null);
+        action.appendText("ExpText2", false, false, false, "Black");
+        String xml = hudson.model.Run.XSTREAM2.toXML(action);
+
+        String simulated = xml.replace(
+                "org.jvnet.hudson.plugins.groovypostbuild.AppendTextBadgeSummaryAction",
+                "org.jvnet.hudson.plugins.groovypostbuild.ThisClassDoesNotExistAnymore");
+        Object result = hudson.model.Run.XSTREAM2.fromXML(simulated);
+        assertEquals(
+                "com.jenkinsci.plugins.badge.action.BadgeSummaryAction",
+                result.getClass().getName());
+        assertEquals("<font color=\"Black\">ExpText2</font>", extractElement(simulated, "text"));
     }
 }

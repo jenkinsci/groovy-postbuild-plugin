@@ -21,22 +21,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package org.jvnet.hudson.plugins.groovypostbuild;
 
-import com.jenkinsci.plugins.badge.action.BadgeSummaryAction;
+import com.jenkinsci.plugins.badge.action.BadgeAction;
 
 /**
- * Converts GroovyPostbuildSummaryAction to {@link BadgeSummaryAction}
+ * Converts GroovyPostbuildAction to {@link BadgeAction}
  *
- * @since 2.4
  */
-/*package*/ class GroovyPostbuildSummaryActionMigrator {
+/*package*/ class GroovyPostbuildActionMigrator {
     private transient String iconPath;
-    private transient StringBuilder textBuilder;
+    private transient String text;
+    private transient String color;
+    private transient String background;
+    private transient String border;
+    private transient String borderColor;
+    private transient String link;
 
-    protected BadgeSummaryAction readResolve() {
-        return new BadgeSummaryAction(
-                null, iconPath, textBuilder != null ? textBuilder.toString() : null, null, null, null, null);
+    protected BadgeAction readResolve() {
+        String style = "";
+        if (border != null) {
+            style += "border: " + border + " solid " + (borderColor != null ? borderColor : "") + ";";
+        }
+        if (background != null) {
+            style += "background: " + background + ";";
+        }
+        if (color != null) {
+            if (color.startsWith("jenkins-!-color-")) {
+                style += "color: var(--" + color.replaceFirst("jenkins-!-color-", "") + ");";
+            } else if (color.startsWith("jenkins-!-")) {
+                style += "color: var(--" + color.replaceFirst("jenkins-!-", "") + ");";
+            } else {
+                style += "color: " + color + ";";
+            }
+        }
+
+        return new BadgeAction(null, iconPath, text, null, style, link, null);
     }
 }
