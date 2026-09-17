@@ -802,6 +802,83 @@ class GroovyPostbuildRecorderTest {
     }
 
     @Test
+    void testRemoveBadgeActions() throws Exception {
+        // removeBadgeActions() is the honestly-named counterpart of removeBadges():
+        // it removes every AbstractBadgeAction, badges and summaries alike.
+        String template = "method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder$BadgeManager %s";
+        ScriptApproval.get().approveSignature(template.formatted("createSummary java.lang.String"));
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getPublishersList()
+                .add(new GroovyPostbuildRecorder(
+                        new SecureGroovyScript(
+                                """
+                                manager.addShortText('test1');
+                                manager.createSummary('attribute.png');
+                                manager.removeBadgeActions();
+                                """,
+                                true, // sandbox
+                                Collections.emptyList()),
+                        2, // behavior
+                        false // runForMatrixParent
+                        ));
+
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals(Collections.emptyList(), b.getActions(BadgeAction.class));
+        assertEquals(Collections.emptyList(), b.getActions(BadgeSummaryAction.class));
+    }
+
+    @Test
+    void testRemoveBadgeAction() throws Exception {
+        // removeBadgeAction(int) indexes into the combined AbstractBadgeAction list
+        // (badges and summaries together), same as removeBadge(int) does today.
+        String template = "method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder$BadgeManager %s";
+        ScriptApproval.get().approveSignature(template.formatted("createSummary java.lang.String"));
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getPublishersList()
+                .add(new GroovyPostbuildRecorder(
+                        new SecureGroovyScript(
+                                """
+                                manager.addShortText('test1');
+                                manager.createSummary('attribute.png');
+                                manager.removeBadgeAction(0);
+                                """,
+                                true, // sandbox
+                                Collections.emptyList()),
+                        2, // behavior
+                        false // runForMatrixParent
+                        ));
+
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals(Collections.emptyList(), b.getActions(BadgeAction.class));
+        assertEquals(1, b.getActions(BadgeSummaryAction.class).size());
+    }
+
+    @Test
+    void testRemoveBadgeActionOutOfRangeIndex() throws Exception {
+        // An out-of-range index reports an error on the listener and removes nothing.
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getPublishersList()
+                .add(new GroovyPostbuildRecorder(
+                        new SecureGroovyScript(
+                                """
+                                manager.addShortText('test1');
+                                manager.removeBadgeAction(5);
+                                """,
+                                true, // sandbox
+                                Collections.emptyList()),
+                        2, // behavior
+                        false // runForMatrixParent
+                        ));
+
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        j.assertLogContains("Invalid badge index: 5. Allowed values: 0 .. 0", b);
+        assertEquals(List.of("test1"), Lists.transform(b.getActions(BadgeAction.class), AbstractBadgeAction::getText));
+    }
+
+    @Test
     void testRemoveSummary() throws Exception {
         j.jenkins.setMarkupFormatter(RawHtmlMarkupFormatter.INSTANCE);
 
