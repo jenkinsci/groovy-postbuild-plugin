@@ -222,14 +222,14 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
             return (r != null) ? r.toString() : null;
         }
 
-        /** WARNING: This method removes actually {@link AbstractBadgeAction} objects
-         *  from the {@link #build}, which include both actual {@link BadgeAction badges}
-         *  seen in the build list column, and the {@link BadgeSummaryAction summaries}
-         *  seen on the build page.<br/>
+        /** Removes every {@link AbstractBadgeAction} object from the {@link #build},
+         *  which includes both actual {@link BadgeAction badges} seen in the build
+         *  list column, and the {@link BadgeSummaryAction summaries} seen on the
+         *  build page.<br/>
          *
-         *  It is a historic misnomer, so you may want actually the variants constrained
-         *  to those Action types, e.g. {@link #removeBadgesOnly()}
-         *  or {@link #removeSummaries()}.
+         *  If you want only one of those Action types removed, use the variants
+         *  constrained to it instead: {@link #removeBadgesOnly()} for badges only,
+         *  or {@link #removeSummaries()} for summaries only.<br/>
          *
          *  Removal in this context means that the {@link Action} would no longer be
          *  linked to the specified build. An object in the pipeline (if someone gets
@@ -237,6 +237,35 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
          *  no longer used and gets garbage-collected. Maybe someone can re-add such
          *  an Action object to same or different build before it evaporates, though.<br/>
          *
+         *  @see #removeBadgeAction(int)
+         *  @see #removeBadges()
+         *  @see #removeBadge(int)
+         *  @see #removeBadgesOnly()
+         *  @see #removeBadgeOnly(int)
+         *  @see #removeSummaries()
+         *  @see #removeSummary(int)
+         */
+        @Whitelisted
+        public void removeBadgeActions() {
+            List<AbstractBadgeAction> badgeActions = build.getActions(AbstractBadgeAction.class);
+            for (AbstractBadgeAction a : badgeActions) {
+                build.removeAction(a);
+            }
+        }
+
+        /** {@link #removeBadges()} is {@link #removeBadgeActions()} under a historic
+         *  misnomer name: despite the name, it removes both badges and summaries. This
+         *  method is kept for backward compatibility and simply delegates to
+         *  {@link #removeBadgeActions()}.<br/>
+         *
+         *  <b>Note:</b> at a future major version, {@code removeBadges()} is scheduled
+         *  to be narrowed to mean what {@link #removeBadgesOnly()} means today, i.e.
+         *  removing {@link BadgeAction badges} only, not {@link BadgeSummaryAction
+         *  summaries}. Callers who want today's behavior (removing every
+         *  {@link AbstractBadgeAction}, badges and summaries alike) should move to
+         *  {@link #removeBadgeActions()} instead.<br/>
+         *
+         *  @see #removeBadgeActions()
          *  @see #removeBadge(int)
          *  @see #removeBadgesOnly()
          *  @see #removeBadgeOnly(int)
@@ -245,25 +274,29 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
          */
         @Whitelisted
         public void removeBadges() {
-            List<AbstractBadgeAction> badgeActions = build.getActions(AbstractBadgeAction.class);
-            for (AbstractBadgeAction a : badgeActions) {
-                build.removeAction(a);
-            }
+            removeBadgeActions();
         }
 
-        /** WARNING: This method removes actually {@link AbstractBadgeAction} objects
-         *  from the {@link #build}, which include both actual {@link BadgeAction badges}
+        /** Removes the {@link AbstractBadgeAction} at the given {@code index} from
+         *  the {@link #build}. The index is into the combined list of every
+         *  {@link AbstractBadgeAction}, i.e. both actual {@link BadgeAction badges}
          *  seen in the build list column, and the {@link BadgeSummaryAction summaries}
-         *  seen on the build page. For more details, see {@link #removeBadges()}.<br/>
+         *  seen on the build page. See {@link #removeBadgeActions()} for what that
+         *  list contains and what removal means.<br/>
          *
+         *  If {@code index} is out of range, an error is written to the
+         *  {@link #listener} and nothing is removed.<br/>
+         *
+         *  @see #removeBadgeActions()
          *  @see #removeBadges()
+         *  @see #removeBadge(int)
          *  @see #removeBadgesOnly()
          *  @see #removeBadgeOnly(int)
          *  @see #removeSummaries()
          *  @see #removeSummary(int)
          */
         @Whitelisted
-        public void removeBadge(int index) {
+        public void removeBadgeAction(int index) {
             List<AbstractBadgeAction> badgeActions = build.getActions(AbstractBadgeAction.class);
             if (index < 0 || index >= badgeActions.size()) {
                 listener.error("Invalid badge index: " + index + ". Allowed values: 0 .. " + (badgeActions.size() - 1));
@@ -273,8 +306,34 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
             }
         }
 
-        /** For details, see {@link #removeBadges()}.<br/>
+        /** {@link #removeBadge(int)} is {@link #removeBadgeAction(int)} under a
+         *  historic misnomer name: despite the name, it indexes into badges and
+         *  summaries together. This method is kept for backward compatibility and
+         *  simply delegates to {@link #removeBadgeAction(int)}.<br/>
          *
+         *  <b>Note:</b> at a future major version, {@code removeBadge(int)} is
+         *  scheduled to be narrowed to mean what {@link #removeBadgeOnly(int)} means
+         *  today, i.e. indexing into {@link BadgeAction badges} only, not
+         *  {@link BadgeSummaryAction summaries}. Callers who want today's behavior
+         *  (indexing into every {@link AbstractBadgeAction}, badges and summaries
+         *  alike) should move to {@link #removeBadgeAction(int)} instead.<br/>
+         *
+         *  @see #removeBadgeAction(int)
+         *  @see #removeBadges()
+         *  @see #removeBadgesOnly()
+         *  @see #removeBadgeOnly(int)
+         *  @see #removeSummaries()
+         *  @see #removeSummary(int)
+         */
+        @Whitelisted
+        public void removeBadge(int index) {
+            removeBadgeAction(index);
+        }
+
+        /** For details, see {@link #removeBadgeActions()}.<br/>
+         *
+         *  @see #removeBadgeActions()
+         *  @see #removeBadgeAction(int)
          *  @see #removeBadges()
          *  @see #removeBadge(int)
          *  @see #removeBadgeOnly(int)
@@ -289,8 +348,10 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
             }
         }
 
-        /** For details, see {@link #removeBadges()}.<br/>
+        /** For details, see {@link #removeBadgeActions()}.<br/>
          *
+         *  @see #removeBadgeActions()
+         *  @see #removeBadgeAction(int)
          *  @see #removeBadges()
          *  @see #removeBadge(int)
          *  @see #removeBadgesOnly()
@@ -322,8 +383,10 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
             return action;
         }
 
-        /** For details, see {@link #removeBadges()}.<br/>
+        /** For details, see {@link #removeBadgeActions()}.<br/>
          *
+         *  @see #removeBadgeActions()
+         *  @see #removeBadgeAction(int)
          *  @see #removeBadges()
          *  @see #removeBadge(int)
          *  @see #removeBadgesOnly()
@@ -337,8 +400,10 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
             }
         }
 
-        /** For details, see {@link #removeBadges()}.<br/>
+        /** For details, see {@link #removeBadgeActions()}.<br/>
          *
+         *  @see #removeBadgeActions()
+         *  @see #removeBadgeAction(int)
          *  @see #removeBadges()
          *  @see #removeBadge(int)
          *  @see #removeBadgesOnly()

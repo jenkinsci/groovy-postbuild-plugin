@@ -46,10 +46,20 @@ You can always use *approved methods*, but you can use *non-approved methods* on
 -   `removeBadges()` - removes all badges *and summaries* from the current build. Badges and summaries
     are both represented as subclasses of the same base action class, and this method removes any action
     of that base class, so it is not limited to badges despite its name. It is often used with `setBuildNumber`.
-    If you only want to remove badges and leave summaries alone, use `removeBadgesOnly()` instead.
+    If you only want to remove badges and leave summaries alone, use `removeBadgesOnly()` instead. This name
+    is scheduled to be narrowed at a future major version to mean what `removeBadgesOnly()` means today; if
+    you want today's behavior (removing badges and summaries together), use `removeBadgeActions()` instead.
 -   `removeBadge(index)` - removes the badge-or-summary with the given index, for the same reason described
     for `removeBadges()`. It is often used with `setBuildNumber`. If you only want to remove a badge, use
-    `removeBadgeOnly(index)` instead.
+    `removeBadgeOnly(index)` instead. This name is scheduled to be narrowed at a future major version to mean
+    what `removeBadgeOnly(index)` means today; if you want today's behavior, use `removeBadgeAction(index)`
+    instead.
+-   `removeBadgeActions()` - the honestly named counterpart of `removeBadges()`. Removes all badges *and
+    summaries* from the current build; this is what `removeBadges()` does today. Use this name if you want
+    that behavior to keep working once `removeBadges()` is narrowed.
+-   `removeBadgeAction(index)` - the honestly named counterpart of `removeBadge(index)`. Removes the
+    badge-or-summary with the given index; this is what `removeBadge(index)` does today. Use this name if you
+    want that behavior to keep working once `removeBadge(index)` is narrowed.
 -   `removeBadgesOnly()` - removes only the badges from the current build, leaving any summaries untouched.
 -   `removeBadgeOnly(index)` - removes only the badge with the given index, leaving any summaries untouched.
     Note that this index is into the badge-only list, so index 0 here is not necessarily the same action as
