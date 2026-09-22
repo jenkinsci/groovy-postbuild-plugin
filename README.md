@@ -105,10 +105,32 @@ You can always use *approved methods*, but you can use *non-approved methods* on
 
 -   `buildIsA(klass)` - test the build is a specified class
 
+#### Summary modification
+
+-   `createSummary(icon)` - creates an entry in the build summary page and
+    returns a *summary* object corresponding to this entry.
+
+    The icon can be one of [IonIcons](https://ionic.io/ionicons) referenced by
+    `symbol-<name> plugin-ionicons-api`, or Jenkins core icon referenced by
+    `icon-<name>` or `symbol-<name>`. See examples [here](https://www.jenkins.io/doc/pipeline/steps/badge/#addbadge-add-badge).
+
+    You can append text to the *summary* object by
+    calling its *appendText* methods. Be careful appending
+    HTML-unescaped texts as they can be harmful.
+    -   `appendText(text, escapeHtml)`
+    -   `appendText(text, escapeHtml, bold, italic, color)`
+
+    The *summary* object is the Badge plugin's summary action. The setters and getters the
+    Badge plugin approves on it (`setText`, `setIcon`, `setLink`, `setStyle`, `setCssClass`,
+    `setTarget`) need no approval either; a Pipeline script already gets the same kind of
+    object from the Badge plugin's `addSummary` step.
+-   `removeSummaries()` - removes all summaries from the current build.
+-   `removeSummary(index)` - removes the summary with the given index.
+
 ### Non-approved methods
 
-Methods returning non-primitive objects aren't approved.
-The groovy postbuild plugin doesn't ensure that the methods of the returned object are safe.
+Methods returning non-primitive objects aren't approved, except `createSummary(icon)` above.
+The groovy postbuild plugin doesn't ensure that the methods of the returned objects are safe.
 
 -   `build` - the current build - [javadoc](https://javadoc.jenkins.io/hudson/model/AbstractBuild.html)
 -   `jenkins` - the current controller instance - [javadoc](https://javadoc.jenkins.io/jenkins/model/Jenkins.html)
@@ -136,23 +158,6 @@ The groovy postbuild plugin doesn't ensure that the methods of the returned obje
 
 -   `setBuildNumber(number)` - sets the build with the given number as current build.
     The current build is the target of all methods that add or remove badges and summaries or change the build result.
-
-#### Summary modification
-
--   `createSummary(icon)` - creates an entry in the build summary page and
-    returns a *summary* object corresponding to this entry.
-
-    The icon can be one of [IonIcons](https://ionic.io/ionicons) referenced by
-    `symbol-<name> plugin-ionicons-api`, or Jenkins core icon referenced by
-    `icon-<name>` or `symbol-<name>`. See examples [here](https://www.jenkins.io/doc/pipeline/steps/badge/#addbadge-add-badge).
-
-    You can append text to the *summary* object by
-    calling its *appendText* methods. Be careful appending
-    HTML-unescaped texts as they can be harmful.
-    -   `appendText(text, escapeHtml)`
-    -   `appendText(text, escapeHtml, bold, italic, color)`
--   `removeSummaries()` - removes all summaries from the current build.
--   `removeSummary(index)` - removes the summary with the given index.
 
 ### Example usages
 

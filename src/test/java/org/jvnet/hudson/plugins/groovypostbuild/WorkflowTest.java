@@ -25,8 +25,12 @@ package org.jvnet.hudson.plugins.groovypostbuild;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import com.google.common.collect.Lists;
+import com.jenkinsci.plugins.badge.action.AbstractBadgeAction;
 import com.jenkinsci.plugins.badge.action.BadgeAction;
+import com.jenkinsci.plugins.badge.action.BadgeSummaryAction;
 import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
@@ -81,6 +85,19 @@ class WorkflowTest {
         p.setDefinition(new CpsFlowDefinition("manager.addErrorBadge 'stuff is broken'", true));
         WorkflowRun b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
         assertEquals("stuff is broken", b.getAction(BadgeAction.class).getText());
+    }
+
+    @Issue("JENKINS-31038")
+    @Test
+    void usingManagerCreateSummaryAndRemoveSummary() throws Exception {
+        WorkflowJob p = j.jenkins.createProject(WorkflowJob.class, "p-createSummary");
+        p.setDefinition(new CpsFlowDefinition("""
+                manager.createSummary('attribute.png').appendText('one', false);
+                manager.createSummary('attribute.png').appendText('two', false);
+                manager.removeSummary(0);""", true));
+        WorkflowRun b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals(
+                List.of("two"), Lists.transform(b.getActions(BadgeSummaryAction.class), AbstractBadgeAction::getText));
     }
 
     @Issue("JENKINS-54128")
