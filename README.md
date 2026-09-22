@@ -33,6 +33,10 @@ You can always use *approved methods*, but you can use *non-approved methods* on
 #### Short text methods
 
 -   `addShortText(text)` - puts a badge with a short text, using the default format.
+-   `addShortText(text, cssClass)` - puts a badge with a short text and the given CSS class, for
+    example a [Jenkins design library](https://weekly.ci.jenkins.io/design-library/) class,
+    `manager.addShortText('Deployed', 'jenkins-!-success-color')`, or a class from the
+    controller's custom CSS. A `null` cssClass behaves like `addShortText(text)`.
 -   `addShortText(text, color, background, border, borderColor)` - puts a badge with a short text, using the specified format.
     Supports html color names.
 
