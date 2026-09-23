@@ -53,6 +53,14 @@ public class WorkflowManager extends GlobalVariable {
         }
         // TODO currently no way to get access to WorkflowRun.listener
         TaskListener listener = new LogTaskListener(Logger.getLogger(WorkflowManager.class.getName()), Level.WARNING);
-        return new GroovyPostbuildRecorder.BadgeManager(build, listener, Result.FAILURE);
+        Run<?, ?> target = build;
+        PipelineManagerBuildNumberAction redirect = build.getAction(PipelineManagerBuildNumberAction.class);
+        if (redirect != null) {
+            Run<?, ?> redirected = build.getParent().getBuildByNumber(redirect.getBuildNumber());
+            if (redirected != null) {
+                target = redirected;
+            }
+        }
+        return new GroovyPostbuildRecorder.BadgeManager(target, build, listener, Result.FAILURE);
     }
 }
