@@ -984,6 +984,48 @@ class GroovyPostbuildRecorderTest {
     }
 
     @Test
+    void testRemoveSummaryByObject() throws Exception {
+        j.jenkins.setMarkupFormatter(RawHtmlMarkupFormatter.INSTANCE);
+
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getPublishersList()
+                .add(new GroovyPostbuildRecorder(
+                        new SecureGroovyScript("""
+                                def first = manager.createSummary('attribute.png');
+                                first.appendText('Test1', false, false, false, 'Black');
+                                manager.createSummary('attribute.png').appendText('Test2', false, false, false, 'Black');
+                                manager.removeSummary(first);
+                                """, true, Collections.emptyList()),
+                        2, // behavior
+                        false // runForMatrixParent
+                        ));
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals(
+                List.of("Test2"),
+                Lists.transform(b.getActions(BadgeSummaryAction.class), AbstractBadgeAction::getText));
+    }
+
+    @Test
+    void testRemoveSummaryByObjectNotOnBuildIsNoop() throws Exception {
+        j.jenkins.setMarkupFormatter(RawHtmlMarkupFormatter.INSTANCE);
+
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getPublishersList()
+                .add(new GroovyPostbuildRecorder(
+                        new SecureGroovyScript("""
+                                def first = manager.createSummary('attribute.png');
+                                first.appendText('Test1', false, false, false, 'Black');
+                                manager.removeSummary(first);
+                                manager.removeSummary(first);
+                                """, true, Collections.emptyList()),
+                        2, // behavior
+                        false // runForMatrixParent
+                        ));
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals(Collections.emptyList(), b.getActions(BadgeSummaryAction.class));
+    }
+
+    @Test
     @Issue("JENKINS-54262")
     void testRunWithNonAdministrator() throws Exception {
         FreeStyleProject p = j.createFreeStyleProject();

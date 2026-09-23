@@ -461,6 +461,23 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
             }
         }
 
+        /** Removes the given summary, as returned by {@link #createSummary(String)}.
+         *  Does nothing if it is not on the build.<br/>
+         *
+         *  @see #removeBadgeActions()
+         *  @see #removeBadgeAction(int)
+         *  @see #removeBadges()
+         *  @see #removeBadge(int)
+         *  @see #removeBadgesOnly()
+         *  @see #removeBadgeOnly(int)
+         *  @see #removeSummaries()
+         *  @see #removeSummary(int)
+         */
+        @Whitelisted
+        public void removeSummary(BadgeSummaryAction summary) {
+            build.removeAction(summary);
+        }
+
         @Whitelisted
         public void buildUnstable() {
             build.setResult(Result.UNSTABLE);

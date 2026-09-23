@@ -118,6 +118,20 @@ class WorkflowTest {
                 List.of("two"), Lists.transform(b.getActions(BadgeSummaryAction.class), AbstractBadgeAction::getText));
     }
 
+    @Issue("JENKINS-66122")
+    @Test
+    void removeSummaryByObject() throws Exception {
+        WorkflowJob p = j.jenkins.createProject(WorkflowJob.class, "p-removeSummaryByObject");
+        p.setDefinition(new CpsFlowDefinition("""
+                def first = manager.createSummary('attribute.png')
+                first.appendText('Test1')
+                manager.createSummary('attribute.png').appendText('Test2')
+                manager.removeSummary(first)
+                """, true));
+        WorkflowRun b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals("Test2", b.getAction(BadgeSummaryAction.class).getText());
+    }
+
     @Issue("JENKINS-54128")
     @Test
     void logContains() throws Exception {
