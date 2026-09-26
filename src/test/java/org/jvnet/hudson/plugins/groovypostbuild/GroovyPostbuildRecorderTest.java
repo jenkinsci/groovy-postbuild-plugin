@@ -590,6 +590,49 @@ class GroovyPostbuildRecorderTest {
     }
 
     @Test
+    @Issue("JENKINS-73269")
+    void testAddShortTextCanSetCssClass() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getPublishersList()
+                .add(new GroovyPostbuildRecorder(
+                        new SecureGroovyScript(
+                                "manager.addShortText('testing', 'my-css-class');",
+                                true, // sandbox
+                                Collections.emptyList()),
+                        2, // behavior
+                        false // runForMatrixParent
+                        ));
+
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+
+        assertEquals("my-css-class", b.getAction(BadgeAction.class).getCssClass());
+    }
+
+    @Test
+    @Issue("JENKINS-73269")
+    void testAddShortTextWithNullCssClassBehavesLikeOneArgOverload() throws Exception {
+        FreeStyleProject p = j.createFreeStyleProject();
+
+        p.getPublishersList()
+                .add(new GroovyPostbuildRecorder(
+                        new SecureGroovyScript(
+                                "manager.addShortText('testing', null);",
+                                true, // sandbox
+                                Collections.emptyList()),
+                        2, // behavior
+                        false // runForMatrixParent
+                        ));
+
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+
+        BadgeAction action = b.getAction(BadgeAction.class);
+        assertNull(action.getCssClass());
+        assertNull(action.getStyle());
+        assertEquals("testing", action.getText());
+    }
+
+    @Test
     void testAddShortTextWithColorVariablePrefixTranslatesToCssCustomProperty() throws Exception {
         // 'jenkins-!-color-<name>' must translate to the CSS custom property
         // var(--<name>), not var(---<name>) with a stray extra hyphen.

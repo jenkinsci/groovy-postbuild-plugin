@@ -151,6 +151,11 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
         }
 
         @Whitelisted
+        public void addShortText(String text, String cssClass) {
+            build.addAction(new BadgeAction(null, null, text, cssClass, null, null, null));
+        }
+
+        @Whitelisted
         public void addShortText(String text, String color, String background, String border, String borderColor) {
             // translate old styling to new field
             String style = "border: " + (border != null ? border : "") + " solid"
