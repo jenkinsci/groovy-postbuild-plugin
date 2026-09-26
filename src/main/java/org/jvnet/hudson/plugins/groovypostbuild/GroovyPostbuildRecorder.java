@@ -376,6 +376,7 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
         // signature would get NoSuchMethodError. Groovy dispatches appendText(...) dynamically
         // against the actual runtime object, so nothing about calling it from a script depends on
         // the declared type here.
+        @Whitelisted
         public BadgeSummaryAction createSummary(String icon) {
             AppendTextBadgeSummaryAction action =
                     new AppendTextBadgeSummaryAction(null, icon, null, null, null, null, null);
@@ -393,6 +394,7 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
          *  @see #removeBadgeOnly(int)
          *  @see #removeSummary(int)
          */
+        @Whitelisted
         public void removeSummaries() {
             List<BadgeSummaryAction> summaryActions = build.getActions(BadgeSummaryAction.class);
             for (BadgeSummaryAction a : summaryActions) {
@@ -410,6 +412,7 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
          *  @see #removeBadgeOnly(int)
          *  @see #removeSummaries()
          */
+        @Whitelisted
         public void removeSummary(int index) {
             List<BadgeSummaryAction> summaryActions = build.getActions(BadgeSummaryAction.class);
             if (index < 0 || index >= summaryActions.size()) {

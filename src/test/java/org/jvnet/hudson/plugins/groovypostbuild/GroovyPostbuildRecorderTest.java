@@ -748,8 +748,6 @@ class GroovyPostbuildRecorderTest {
     @Test
     void testRemoveBadgesOnlyLeavesSummaries() throws Exception {
         // removeBadgesOnly() is constrained to BadgeAction and must not touch BadgeSummaryAction
-        String template = "method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder$BadgeManager %s";
-        ScriptApproval.get().approveSignature(template.formatted("createSummary java.lang.String"));
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.getPublishersList()
@@ -777,8 +775,6 @@ class GroovyPostbuildRecorderTest {
         // Pins today's (surprising) behavior: removeBadges() filters on the shared
         // AbstractBadgeAction superclass, so it removes summaries too, not just badges.
         // If this is ever fixed to match its name, this test must be updated deliberately.
-        String template = "method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder$BadgeManager %s";
-        ScriptApproval.get().approveSignature(template.formatted("createSummary java.lang.String"));
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.getPublishersList()
@@ -805,8 +801,6 @@ class GroovyPostbuildRecorderTest {
     void testRemoveBadgeActions() throws Exception {
         // removeBadgeActions() is the honestly-named counterpart of removeBadges():
         // it removes every AbstractBadgeAction, badges and summaries alike.
-        String template = "method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder$BadgeManager %s";
-        ScriptApproval.get().approveSignature(template.formatted("createSummary java.lang.String"));
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.getPublishersList()
@@ -832,8 +826,6 @@ class GroovyPostbuildRecorderTest {
     void testRemoveBadgeAction() throws Exception {
         // removeBadgeAction(int) indexes into the combined AbstractBadgeAction list
         // (badges and summaries together), same as removeBadge(int) does today.
-        String template = "method org.jvnet.hudson.plugins.groovypostbuild.GroovyPostbuildRecorder$BadgeManager %s";
-        ScriptApproval.get().approveSignature(template.formatted("createSummary java.lang.String"));
         FreeStyleProject p = j.createFreeStyleProject();
 
         p.getPublishersList()
@@ -919,6 +911,33 @@ class GroovyPostbuildRecorderTest {
                         ));
         FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
         assertEquals(Collections.emptyList(), b.getActions(BadgeSummaryAction.class));
+    }
+
+    @Test
+    @Issue("JENKINS-31038")
+    void testCreateSummaryDoesNotNeedManualApprovalForSandboxedScript() throws Exception {
+        // Sandboxed, no ScriptApproval: the summary methods are whitelisted like the badge methods.
+        FreeStyleProject p = j.createFreeStyleProject();
+        p.getPublishersList()
+                .add(new GroovyPostbuildRecorder(
+                        new SecureGroovyScript(
+                                """
+                                manager.createSummary('attribute.png').appendText('Test1', false, false, false, 'Black');
+                                manager.createSummary('attribute.png').appendText('Test2', false, false, false, 'Black');
+                                manager.removeSummary(0);
+                                manager.createSummary('attribute.png').appendText('Test3', false, false, false, 'Black');
+                                manager.removeSummaries();
+                                manager.createSummary('warning.gif').appendText('hi', false);
+                                """,
+                                true, // sandbox
+                                Collections.emptyList()),
+                        2, // behavior
+                        false // runForMatrixParent
+                        ));
+
+        FreeStyleBuild b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals(
+                List.of("hi"), Lists.transform(b.getActions(BadgeSummaryAction.class), AbstractBadgeAction::getText));
     }
 
     @Test
