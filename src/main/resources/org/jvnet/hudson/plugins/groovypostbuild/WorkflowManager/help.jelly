@@ -25,5 +25,10 @@ THE SOFTWARE.
 
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+    <p>
+      Provided by the <a href="https://plugins.jenkins.io/groovy-postbuild/">Groovy Postbuild</a> plugin.
+      In Pipeline, <code>manager.println</code> and <code>manager.listener.logger</code> write to the
+      Jenkins system log, not the build console; use <code>echo</code> to write to the console.
+    </p>
     <st:include page="/org/jvnet/hudson/plugins/groovypostbuild/GroovyPostbuildRecorder/help.jelly"/>
 </j:jelly>

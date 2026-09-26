@@ -110,9 +110,9 @@ You can always use *approved methods*, but you can use *non-approved methods* on
 Methods returning non-primitive objects aren't approved.
 The groovy postbuild plugin doesn't ensure that the methods of the returned object are safe.
 
--   `build` - the current build - [javadoc](https://javadoc.jenkins.io/hudson/model/AbstractBuild.html)
+-   `build` - the current build - [javadoc](https://javadoc.jenkins.io/hudson/model/Run.html)
 -   `jenkins` - the current controller instance - [javadoc](https://javadoc.jenkins.io/jenkins/model/Jenkins.html)
--   `listener` - the build listener - [javadoc](https://javadoc.jenkins.io/hudson/model/BuildListener.html)
+-   `listener` - the build listener - [javadoc](https://javadoc.jenkins.io/hudson/model/BuildListener.html). In Pipeline it writes to the Jenkins system log, not the build console; use `echo` there.
 
 #### Environment variables
 
