@@ -71,6 +71,15 @@ class WorkflowTest {
         assertEquals("stuff is broken", b.getAction(BadgeAction.class).getText());
     }
 
+    @Issue("JENKINS-73269")
+    @Test
+    void usingManagerAddShortTextWithCssClass() throws Exception {
+        WorkflowJob p = j.jenkins.createProject(WorkflowJob.class, "p-addShortTextCssClass");
+        p.setDefinition(new CpsFlowDefinition("manager.addShortText('stuff is broken', 'my-css-class')", true));
+        WorkflowRun b = j.assertBuildStatusSuccess(p.scheduleBuild2(0));
+        assertEquals("my-css-class", b.getAction(BadgeAction.class).getCssClass());
+    }
+
     @Test
     void usingManagerInfoBadge() throws Exception {
         WorkflowJob p = j.jenkins.createProject(WorkflowJob.class, "p-infoBadge");
