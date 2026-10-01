@@ -75,13 +75,28 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 
     public static class BadgeManager {
         private Run<?, ?> build;
+        private final Run<?, ?> homeBuild;
         private final TaskListener listener;
         private final Result scriptFailureResult;
         private final Set<Run<?, ?>> builds = new HashSet<Run<?, ?>>();
         private EnvVars envVars;
 
         public BadgeManager(Run<?, ?> build, TaskListener listener, Result scriptFailureResult) {
+            this(build, null, listener, scriptFailureResult);
+        }
+
+        /**
+         * @param build the build {@code this} currently acts on, i.e. the target of a prior
+         *     {@link #setBuildNumber(int)} redirect, or {@code homeBuild} if there was none
+         * @param homeBuild the build the Pipeline step that obtained {@code this} is actually
+         *     running on, where a {@link #setBuildNumber(int)} redirect is recorded so a later,
+         *     separately-obtained {@code manager} in the same run picks it up; {@code null} for
+         *     Freestyle, where a single {@code BadgeManager} instance is reused for the whole
+         *     script and no such hand-off is needed
+         */
+        BadgeManager(Run<?, ?> build, Run<?, ?> homeBuild, TaskListener listener, Result scriptFailureResult) {
             setBuild(build);
+            this.homeBuild = homeBuild;
             try {
                 this.envVars = build.getEnvironment(listener);
             } catch (InterruptedException e) {
@@ -137,8 +152,25 @@ public class GroovyPostbuildRecorder extends Recorder implements MatrixAggregata
 
         public boolean setBuildNumber(int buildNumber) {
             Run<?, ?> newBuild = build.getParent().getBuildByNumber(buildNumber);
+            if (newBuild == null) {
+                return false;
+            }
             setBuild(newBuild);
-            return (newBuild != null);
+            if (homeBuild != null) {
+                // Record the redirect on the run the step is actually executing on, so that the
+                // next time the Pipeline script references `manager` - which WorkflowManager
+                // resolves to a brand new BadgeManager - it is built against this same target.
+                if (newBuild.getNumber() == homeBuild.getNumber()) {
+                    PipelineManagerBuildNumberAction existing =
+                            homeBuild.getAction(PipelineManagerBuildNumberAction.class);
+                    if (existing != null) {
+                        homeBuild.removeAction(existing);
+                    }
+                } else {
+                    homeBuild.replaceAction(new PipelineManagerBuildNumberAction(newBuild.getNumber()));
+                }
+            }
+            return true;
         }
         // TBD: @Whitelisted
         public TaskListener getListener() {
