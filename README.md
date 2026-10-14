@@ -130,6 +130,7 @@ You can always use *approved methods*, but you can use *non-approved methods* on
     object from the Badge plugin's `addSummary` step.
 -   `removeSummaries()` - removes all summaries from the current build.
 -   `removeSummary(index)` - removes the summary with the given index.
+-   `removeSummary(summary)` - removes the given summary, as returned by `createSummary(icon)`.
 
 ### Non-approved methods
 
